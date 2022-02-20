@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5b75d4bdc8223960e9cb7af1cdc4ea56",
+    "content-hash": "d8f8940911d98eb8c003a78f89cc07d8",
     "packages": [
         {
             "name": "api-platform/api-pack",
@@ -2717,16 +2717,16 @@
         },
         {
             "name": "lcobucci/jwt",
-            "version": "4.1.4",
+            "version": "4.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lcobucci/jwt.git",
-                "reference": "71cf170102c8371ccd933fa4df6252086d144de6"
+                "reference": "fe2d89f2eaa7087af4aa166c6f480ef04e000582"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lcobucci/jwt/zipball/71cf170102c8371ccd933fa4df6252086d144de6",
-                "reference": "71cf170102c8371ccd933fa4df6252086d144de6",
+                "url": "https://api.github.com/repos/lcobucci/jwt/zipball/fe2d89f2eaa7087af4aa166c6f480ef04e000582",
+                "reference": "fe2d89f2eaa7087af4aa166c6f480ef04e000582",
                 "shasum": ""
             },
             "require": {
@@ -2742,7 +2742,7 @@
                 "infection/infection": "^0.21",
                 "lcobucci/coding-standard": "^6.0",
                 "mikey179/vfsstream": "^1.6.7",
-                "phpbench/phpbench": "^1.0@alpha",
+                "phpbench/phpbench": "^1.0",
                 "phpstan/extension-installer": "^1.0",
                 "phpstan/phpstan": "^0.12",
                 "phpstan/phpstan-deprecation-rules": "^0.12",
@@ -2775,7 +2775,7 @@
             ],
             "support": {
                 "issues": "https://github.com/lcobucci/jwt/issues",
-                "source": "https://github.com/lcobucci/jwt/tree/4.1.4"
+                "source": "https://github.com/lcobucci/jwt/tree/4.1.5"
             },
             "funding": [
                 {
@@ -2787,7 +2787,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2021-03-23T23:53:08+00:00"
+            "time": "2021-09-28T19:34:56+00:00"
         },
         {
             "name": "lexik/jwt-authentication-bundle",
@@ -9112,7 +9112,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^7.2",
+        "php": "^7.4",
         "ext-ctype": "*",
         "ext-fileinfo": "*",
         "ext-iconv": "*",
@@ -9121,5 +9121,5 @@
         "ext-zip": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.2.0"
 }
