@@ -239,7 +239,7 @@ class Composter
 
     /**
      * @var MediaObject|null
-     * 
+     *
      * @ORM\ManyToOne(targetEntity="App\Entity\MediaObject", cascade={"persist"})
      * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
      * @Groups({"composter"})
@@ -359,6 +359,18 @@ class Composter
      * @Groups({"composter:admin"})
      */
     private $plateNumber;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     * @Groups({"composter"})
+     */
+    private $AlimentsAutorises;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     * @Groups({"composter"})
+     */
+    private $AlimentsNonAutorises;
 
 
     public function __construct()
@@ -1086,6 +1098,30 @@ class Composter
     public function setPlateNumber(?string $plateNumber): self
     {
         $this->plateNumber = $plateNumber;
+
+        return $this;
+    }
+
+    public function getAlimentsAutorises(): ?string
+    {
+        return $this->AlimentsAutorises;
+    }
+
+    public function setAlimentsAutorises(?string $AlimentsAutorises): self
+    {
+        $this->AlimentsAutorises = $AlimentsAutorises;
+
+        return $this;
+    }
+
+    public function getAlimentsNonAutorises(): ?string
+    {
+        return $this->AlimentsNonAutorises;
+    }
+
+    public function setAlimentsNonAutorises(?string $AlimentsNonAutorises): self
+    {
+        $this->AlimentsNonAutorises = $AlimentsNonAutorises;
 
         return $this;
     }
