@@ -10,8 +10,7 @@ class ApprovisionnementBroyatFixtures extends Fixture
 {
     public function load(ObjectManager $manager)
     {
-
-    $appros = [
+        $appros = [
         'Autonomie',
         'ALISE',
         'Compostri',
@@ -20,7 +19,7 @@ class ApprovisionnementBroyatFixtures extends Fixture
         'Libre service Compostri',
     ];
 
-        foreach ( $appros as $i => $appro){
+        foreach ($appros as $i => $appro) {
             $entity = new ApprovisionnementBroyat();
             $entity->setName($appro);
             $manager->persist($entity);

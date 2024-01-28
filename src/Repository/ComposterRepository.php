@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Repository;
-
 
 use App\Entity\Composter;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -17,7 +15,6 @@ class ComposterRepository extends ServiceEntityRepository
 
     public function findAllForFrontMap()
     {
-
         return $this->createQueryBuilder('c')
             ->andWhere('c.lat IS NOT NULL')
             ->andWhere('c.lng IS NOT NULL')
@@ -29,7 +26,6 @@ class ComposterRepository extends ServiceEntityRepository
 
     public function findAllForCartoQuartierFrontMap()
     {
-
         return $this->createQueryBuilder('c')
             ->andWhere('c.lat IS NOT NULL')
             ->andWhere('c.lng IS NOT NULL')

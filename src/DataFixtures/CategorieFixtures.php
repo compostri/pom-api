@@ -18,7 +18,7 @@ class CategorieFixtures extends Fixture
            "Place de village"
         ];
 
-        foreach ( $cats as $i => $cat){
+        foreach ($cats as $i => $cat) {
             $entity = new Categorie();
             $entity->setName($cat);
             $manager->persist($entity);

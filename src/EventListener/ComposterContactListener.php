@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\EventListener;
 
 use App\Service\Mailjet;
@@ -10,15 +9,13 @@ use App\Entity\ComposterContact;
 
 class ComposterContactListener
 {
-
     /**
      * @var Mailjet
      */
     private $email;
 
-    public function __construct(Mailjet $email )
+    public function __construct(Mailjet $email)
     {
-
         $this->email = $email;
     }
 
@@ -37,9 +34,7 @@ class ComposterContactListener
         $notify_mc = true;
         $firstReferent = null;
         foreach ($composter->getUserComposters() as $userC) {
-
-            if( $userC->getComposterContactReceiver() ){
-
+            if ($userC->getComposterContactReceiver()) {
                 $user = $userC->getUser();
 
                 $recipients[] = [
@@ -50,11 +45,10 @@ class ComposterContactListener
                 $firstReferent = $user;
                 $notify_mc = false;
             }
-
         }
 
         // On ajoute le maitre composteur à la liste des destinataires
-        if($notify_mc && isset($mc)) {
+        if ($notify_mc && isset($mc)) {
             $recipients[] = [
                 'Email' => $mc->getEmail(),
                 'Name' => $mc->getUsername()
@@ -68,7 +62,7 @@ class ComposterContactListener
             'ReplyTo'       => ['Email' => $composterContact->getEmail()],
             'To'            => $recipients,
             'Subject'       => "[Pom-e] Demande de contact pour le composteur $name",
-            'TemplateID'    => (int) getenv('MJ_CONTACT_FORM_TEMPLATE_ID' ),
+            'TemplateID'    => (int) getenv('MJ_CONTACT_FORM_TEMPLATE_ID'),
             'TemplateLanguage' => true,
             'Variables'     => [
                 'email'     => $composterContact->getEmail(),
@@ -80,12 +74,12 @@ class ComposterContactListener
         $confirmation = [
             'To'            => [['Email' => $composterContact->getEmail()]],
             'Subject'       => '[Pom-e] Demande de contact bien envoyé',
-            'TemplateID'    => (int) getenv('MJ_CONTACT_FORM_USER_CONFIRMED_TEMPLATE_ID' ),
+            'TemplateID'    => (int) getenv('MJ_CONTACT_FORM_USER_CONFIRMED_TEMPLATE_ID'),
             'TemplateLanguage' => true
         ];
 
         // On rajoute un référent pour le "ReplyTo"
-        if( $firstReferent ){
+        if ($firstReferent) {
             $confirmation['ReplyTo'] = [
                 'Email' => $firstReferent->getEmail(),
                 'Name'  => $firstReferent->getUsername()

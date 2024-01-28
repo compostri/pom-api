@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\EventListener;
 
 use App\DBAL\Types\CapabilityEnumType;
@@ -13,7 +12,6 @@ use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
 class UserComposterListener
 {
-
     protected $email;
 
     /**
@@ -33,14 +31,14 @@ class UserComposterListener
      * @param EntityManagerInterface $entityManager
      * @param TokenGeneratorInterface $tokenGenerator
      */
-    public function __construct( Mailjet $email, EntityManagerInterface $entityManager, TokenGeneratorInterface $tokenGenerator)
+    public function __construct(Mailjet $email, EntityManagerInterface $entityManager, TokenGeneratorInterface $tokenGenerator)
     {
         $this->email            = $email;
         $this->entityManager    = $entityManager;
         $this->tokenGenerator   = $tokenGenerator;
     }
 
-    public function postPersist( UserComposter $userComposter ): void
+    public function postPersist(UserComposter $userComposter): void
     {
 
         /**
@@ -50,61 +48,58 @@ class UserComposterListener
         $this->sendConfirmationMail($userComposter);
 
         // Si le user c'est abonné a là newsletter du composteur on l'y ajoute
-        if( $userComposter->getNewsletter() ){
-            $this->email->addToList($userComposter->getUser()->getMailjetId(),[$userComposter->getComposter()->getMailjetListID()]);
+        if ($userComposter->getNewsletter()) {
+            $this->email->addToList($userComposter->getUser()->getMailjetId(), [$userComposter->getComposter()->getMailjetListID()]);
         }
     }
 
-    public function postUpdate( UserComposter $userComposter, LifecycleEventArgs $eventArgs )
+    public function postUpdate(UserComposter $userComposter, LifecycleEventArgs $eventArgs)
     {
 
         // Si on change l'abonnement a la newsletter on envoie l'information a MailJet
-        $changeSet = $eventArgs->getEntityManager()->getUnitOfWork()->getEntityChangeSet( $userComposter);
-        if( isset($changeSet['newsletter']) ){
-            if( $userComposter->getNewsletter() ){
+        $changeSet = $eventArgs->getEntityManager()->getUnitOfWork()->getEntityChangeSet($userComposter);
+        if (isset($changeSet['newsletter'])) {
+            if ($userComposter->getNewsletter()) {
                 // Si le user c'est abonné a là newsletter du composteur on l'y ajoute
-                $this->email->addUser($userComposter->getUser() );
+                $this->email->addUser($userComposter->getUser());
             } else {
                 // Sinon on le désabonne
-                $this->email->removeFromList($userComposter->getUser()->getMailjetId(),[$userComposter->getComposter()->getMailjetListID()]);
+                $this->email->removeFromList($userComposter->getUser()->getMailjetId(), [$userComposter->getComposter()->getMailjetListID()]);
             }
         }
 
         // Si on change les droits du l'utilisateur et qu'il n'a plus des droits ouvreur il faut désactivé l'utilisateur
         $user = $userComposter->getUser();
         $this->sendConfirmationMail($userComposter);
-        if( $userComposter->getCapability() === CapabilityEnumType::USER ){
+        if ($userComposter->getCapability() === CapabilityEnumType::USER) {
             $disabled = true;
 
-            foreach ($user->getUserComposters() as $uc ){
+            foreach ($user->getUserComposters() as $uc) {
                 $disabled = $disabled || $uc->getCapability() === CapabilityEnumType::USER;
             }
 
-            if($disabled){
-                $user->setEnabled( false );
-                $user->setResetToken( null );
+            if ($disabled) {
+                $user->setEnabled(false);
+                $user->setResetToken(null);
                 $this->entityManager->persist($user);
                 $this->entityManager->flush();
             }
         }
-
     }
 
     private function sendConfirmationMail(UserComposter $userComposter)
     {
         $user = $userComposter->getUser();
-        if ( in_array( $userComposter->getCapability(), [ CapabilityEnumType::OPENER, CapabilityEnumType::REFERENT ] )&& !$user->getEnabled() ) {
-
-            if( ! $user->getResetToken()){
+        if (in_array($userComposter->getCapability(), [ CapabilityEnumType::OPENER, CapabilityEnumType::REFERENT ])&& !$user->getEnabled()) {
+            if (! $user->getResetToken()) {
                 $resetToken = $this->tokenGenerator->generateToken();
-                $user->setResetToken( $resetToken );
+                $user->setResetToken($resetToken);
                 $this->entityManager->persist($user);
                 $this->entityManager->flush();
             }
 
             $userConfirmedAccountURL = $user->getUserConfirmedAccountURL();
             if ($userConfirmedAccountURL) {
-
                 $this->email->send([
                     [
                         'To' => [['Email' => $user->getEmail(), 'Name' => $user->getUsername()]],

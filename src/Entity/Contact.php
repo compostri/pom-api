@@ -144,7 +144,7 @@ class Contact
 
         return $this;
     }
-    
+
 
     public function getContactType(): ?string
     {

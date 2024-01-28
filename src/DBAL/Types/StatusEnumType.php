@@ -1,13 +1,11 @@
 <?php
 
-
 namespace App\DBAL\Types;
 
 use Fresh\DoctrineEnumBundle\DBAL\Types\AbstractEnumType;
 
 class StatusEnumType extends AbstractEnumType
 {
-
     public const ACTIVE         = 'Active';
     public const DELETE         = 'Delete';
     public const MOVED          = 'Moved';

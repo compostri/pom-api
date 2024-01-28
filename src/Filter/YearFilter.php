@@ -2,14 +2,12 @@
 
 namespace App\Filter;
 
-
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 
 class YearFilter extends AbstractContextAwareFilter
 {
-
     /**
      * @inheritDoc
      */

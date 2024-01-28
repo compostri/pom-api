@@ -10,7 +10,6 @@ class EquipementFixtures extends Fixture
 {
     public function load(ObjectManager $manager)
     {
-
         $equipements = [
             [
                 'type' => 'Pavillon',
@@ -74,7 +73,7 @@ class EquipementFixtures extends Fixture
             ]
         ];
 
-        foreach ( $equipements as $i => $equipement){
+        foreach ($equipements as $i => $equipement) {
             $entity = new Equipement();
             $entity->setType($equipement['type']);
             $entity->setCapacite($equipement['capacite']);

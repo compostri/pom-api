@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Command;
-
 
 use App\Entity\Composter;
 use App\Entity\MediaObject;
@@ -17,7 +15,6 @@ use Symfony\Component\HttpFoundation\File\File;
 
 class ImportWordPress extends Command
 {
-
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'compost:import-wordpress';
 
@@ -29,7 +26,6 @@ class ImportWordPress extends Command
         parent::__construct();
         $this->em = $entityManager;
         $this->parameterBag = $parameterBag;
-
     }
 
     protected function configure()
@@ -55,16 +51,14 @@ class ImportWordPress extends Command
         $composterCount = 0;
         $lines = 0;
         foreach ($reader->getSheetIterator() as $key => $sheet) {
-
             foreach ($sheet->getRowIterator() as $rkey => $row) {
-
-                if( $rkey > 1 ){
+                if ($rkey > 1) {
                     $lines++;
 
                     // do stuff with the row
                     $cells = $row->getCells();
 
-                    if( ! $cells[0]->isEmpty() ){
+                    if (! $cells[0]->isEmpty()) {
 
                         /**
                          * CSV Format
@@ -82,60 +76,55 @@ class ImportWordPress extends Command
                          */
                         $composterRepository = $this->em->getRepository(Composter::class);
 
-                        $composterName = $this->getRealName( $cells[0]->getValue() );
+                        $composterName = $this->getRealName($cells[0]->getValue());
 
-                        $composter = $composterRepository->findOneBy( [ 'name' => $composterName ]);
+                        $composter = $composterRepository->findOneBy([ 'name' => $composterName ]);
 
 
-                        if( ! $composter instanceof  Composter ){
-                            $output->writeln( "{$composterName} : pas trouvé" );
+                        if (! $composter instanceof  Composter) {
+                            $output->writeln("{$composterName} : pas trouvé");
                         } else {
-
                             $imageUrl = $cells[9]->getValue();
-                            if( $imageUrl !== 'http://www.compostri.fr/wp-includes/images/media/default.png' ){
-                                $imageUrl = str_replace( '-150x150', '', $imageUrl );
-                                $imageName = explode( '/', $imageUrl);
-                                $imageName = end( $imageName );
+                            if ($imageUrl !== 'http://www.compostri.fr/wp-includes/images/media/default.png') {
+                                $imageUrl = str_replace('-150x150', '', $imageUrl);
+                                $imageName = explode('/', $imageUrl);
+                                $imageName = end($imageName);
 
                                 $imagePath = $this->parameterBag->get('upload_destination') . $imageName;
-                                if($imageName && !file_exists($imagePath)) {
-                                    $output->writeln( "import de l‘image {$imageUrl}" );
+                                if ($imageName && !file_exists($imagePath)) {
+                                    $output->writeln("import de l‘image {$imageUrl}");
                                     $imageUrl = urlencode($imageUrl);
                                     $imageUrl = str_replace(['%2F', '%3A'], ['/', ':'], $imageUrl);
                                     $content = file_get_contents($imageUrl);
 
-                                    if( $content ){
-                                        $fileSize = file_put_contents( $imagePath, $content);
+                                    if ($content) {
+                                        $fileSize = file_put_contents($imagePath, $content);
 
-                                        if( $fileSize ){
-
-                                            $file = new File( $imagePath );
+                                        if ($fileSize) {
+                                            $file = new File($imagePath);
 
                                             $mediaObject = new MediaObject();
-                                            $mediaObject->setFile( $file );
+                                            $mediaObject->setFile($file);
 
-                                            $this->em->persist( $mediaObject );
+                                            $this->em->persist($mediaObject);
                                             $this->em->flush();
 
-                                            $composter->setImage( $mediaObject );
+                                            $composter->setImage($mediaObject);
                                         }
                                     }
                                 }
                             }
-                            $composter->setLat( ( float) $cells[7]->getValue() );
-                            $composter->setLng( ( float) $cells[8]->getValue() );
-                            $this->em->persist( $composter );
+                            $composter->setLat(( float) $cells[7]->getValue());
+                            $composter->setLng(( float) $cells[8]->getValue());
+                            $this->em->persist($composter);
                             $composterCount++;
-
                         }
-
                     }
                 }
-
             }
         }
         $this->em->flush();
-        $output->writeln( "{$composterCount} composteurs importé sur {$lines} lignes"  );
+        $output->writeln("{$composterCount} composteurs importé sur {$lines} lignes");
     }
 
 
@@ -143,10 +132,9 @@ class ImportWordPress extends Command
      * @param string $composterName
      * @return string
      */
-    private function getRealName( string $composterName ) : string
+    private function getRealName(string $composterName): string
     {
-
-        $composterName = str_replace( ['&rsquo;', '&#8211;'], ['\'', '-'], $composterName );
+        $composterName = str_replace(['&rsquo;', '&#8211;'], ['\'', '-'], $composterName);
 
 
         $match = [
@@ -207,7 +195,7 @@ class ImportWordPress extends Command
         ];
 
 
-        if( array_key_exists($composterName, $match) ) {
+        if (array_key_exists($composterName, $match)) {
             $composterName = $match[ $composterName];
         }
 

@@ -13,7 +13,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Fresh\DoctrineEnumBundle\Validator\Constraints as DoctrineAssert;
 use Symfony\Component\Validator\Constraints as Assert;
 
-
 /**
  * @ApiResource(
  *     attributes={"security"="is_granted('ROLE_USER')"},

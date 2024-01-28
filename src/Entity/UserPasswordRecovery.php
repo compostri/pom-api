@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Entity;
-
 
 use App\Controller\CreateUserPasswordRecovery;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -34,8 +32,6 @@ use ApiPlatform\Core\Action\NotFoundAction;
  */
 class UserPasswordRecovery
 {
-
-
     /**
      * @var int id
      * @ApiProperty(identifier=true)

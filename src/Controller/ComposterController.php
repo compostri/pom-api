@@ -11,7 +11,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ComposterController extends AbstractController
 {
-
     private $urlHelper;
 
     public function __construct(UrlHelper $urlHelper)
@@ -79,10 +78,8 @@ class ComposterController extends AbstractController
         foreach ($composters as $c) {
             $description = $c->getDescription();
 
-            if( ! $description ){
-
-                if( $c->getCategorie()->getId() === 3 ){
-
+            if (! $description) {
+                if ($c->getCategorie()->getId() === 3) {
                     $description = 'Cet équipement est réservé à un usage pédagogique au sein de l’école';
                 } else {
                     $description = 'Vous pouvez déposer vos déchets organiques lors des permanences assurées par un collectif d’habitants. Distribution de compost en retour. Nous vous invitons à vérifier qu’il reste de la place auprès du référent en le contactant via le formulaire ou en vous rendant sur place lors d[’une permanence';
@@ -132,7 +129,6 @@ class ComposterController extends AbstractController
 
     private function getImageUrl(string $imageName): string
     {
-
         $dir = str_replace($this->getParameter('kernel.project_dir') . '/public', '', $this->getParameter('upload_destination'));
         return $this->urlHelper->getAbsoluteUrl($dir . $imageName);
     }

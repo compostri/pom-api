@@ -10,8 +10,6 @@ class PoleFixtures extends Fixture
 {
     public function load(ObjectManager $manager)
     {
-
-
         $poles = [
             'Loire, Sèvre et Vignoble',
             'Loire Chézine',
@@ -22,7 +20,7 @@ class PoleFixtures extends Fixture
             'Erdre et Cens'
         ];
 
-        foreach ( $poles as $i => $pole){
+        foreach ($poles as $i => $pole) {
             $entity = new Pole();
             $entity->setName($pole);
             $manager->persist($entity);

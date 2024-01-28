@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Command;
-
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,7 +12,6 @@ use Symfony\Component\Console\Question\Question;
 
 class UserCreation extends Command
 {
-
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'compost:user-create';
 
@@ -53,16 +50,15 @@ class UserCreation extends Command
         $password = $helper->ask($input, $output, $question);
 
         $user = new User();
-        $user->setEmail( $email )
-            ->setPlainPassword( $password )
-            ->setUsername( $username )
-            ->setRoles( ['ROLE_ADMIN'])
+        $user->setEmail($email)
+            ->setPlainPassword($password)
+            ->setUsername($username)
+            ->setRoles(['ROLE_ADMIN'])
             ->setUserConfirmedAccountURL(getenv('FRONT_DOMAIN') . '/confirmation')
             ->setIsSubscribeToCompostriNewsletter(false)
-            ->setEnabled( true);
+            ->setEnabled(true);
 
-        $this->em->persist( $user );
+        $this->em->persist($user);
         $this->em->flush();
     }
-
 }

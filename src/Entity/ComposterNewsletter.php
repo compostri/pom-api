@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -33,7 +32,6 @@ use App\Controller\CreateComposterNewsletter;
  */
 class ComposterNewsletter
 {
-
     /**
      * @var string id
      * @ApiProperty(identifier=true)
@@ -58,7 +56,7 @@ class ComposterNewsletter
 
     public function __construct()
     {
-        $this->id = uniqid( 'fake-',false);
+        $this->id = uniqid('fake-', false);
     }
 
     /**

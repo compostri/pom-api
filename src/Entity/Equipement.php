@@ -54,7 +54,7 @@ class Equipement
     {
         return $this->id;
     }
-    
+
 
     /**
      * @return Collection|Composter[]

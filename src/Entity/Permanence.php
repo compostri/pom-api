@@ -21,7 +21,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
 use App\Entity\User;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-
 /**
  * A Permanence
  *

@@ -791,12 +791,12 @@ class Composter
     /**
      * @return UserComposter|null
      */
-    public function getFirstReferent() : ?UserComposter
+    public function getFirstReferent(): ?UserComposter
     {
         $firstReferent = null;
 
-        foreach ( $this->getUserComposters() as $user ){
-            if( $user->getCapability() === CapabilityEnumType::REFERENT ){
+        foreach ($this->getUserComposters() as $user) {
+            if ($user->getCapability() === CapabilityEnumType::REFERENT) {
                 $firstReferent = $user;
                 break;
             }

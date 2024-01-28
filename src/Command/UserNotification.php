@@ -9,14 +9,12 @@ use App\Entity\Permanence;
 use App\Entity\User;
 use App\Service\Mailjet;
 use Doctrine\ORM\EntityManagerInterface;
-use \Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
 class UserNotification extends Command
 {
-
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'compost:user-notification';
 
@@ -52,38 +50,34 @@ class UserNotification extends Command
         $permancesToComme = $permanenceRepo->findAllToNotify();
         $messages = [];
 
-        foreach ( $permancesToComme as $perm ){
-
+        foreach ($permancesToComme as $perm) {
             $openers = $perm->getOpeners();
             $composter = $perm->getComposter();
 
-            if( $composter ){
+            if ($composter) {
+                foreach ($openers as $opener) {
+                    $userComposteur = $opener->getUserCompostersFor($perm->getComposter());
 
-                foreach ($openers as $opener ){
-                    $userComposteur = $opener->getUserCompostersFor( $perm->getComposter() );
-
-                    if( $userComposteur && $userComposteur->getNotif() ){
-                        $messages[] = $this->getFormatMessage( $opener, $perm );
+                    if ($userComposteur && $userComposteur->getNotif()) {
+                        $messages[] = $this->getFormatMessage($opener, $perm);
                     }
                 }
 
                 // TODO vérifier que la réponse de l'API est bien OK avant de $perm->setHasUsersBeenNotify(true)
                 // Pas évident car j'ai mis la notification sur les permanence et que l'api répond par addresse mail
                 $perm->setHasUsersBeenNotify(true);
-                $this->em->persist( $perm );
+                $this->em->persist($perm);
             }
         }
 
-        if( count( $messages ) > 0 ){
-
-            $response = $this->mailjet->send( $messages );
+        if (count($messages) > 0) {
+            $response = $this->mailjet->send($messages);
         }
         $this->em->flush();
     }
 
-    private function getFormatMessage( User $opener, Permanence $perm )
+    private function getFormatMessage(User $opener, Permanence $perm)
     {
-
         $firstReferent = $perm->getComposter()->getFirstReferent();
 
         $formattedMessage =  [
@@ -102,7 +96,7 @@ class UserNotification extends Command
             ]
         ];
 
-        if( $firstReferent ){
+        if ($firstReferent) {
             $formattedMessage['ReplyTo'] = [
                 'Email' => $firstReferent->getUser()->getEmail(),
                 'Name'  => $firstReferent->getUser()->getUsername()

@@ -31,7 +31,7 @@ class QuartierFixtures extends Fixture
             'Rezé Hôtel de Ville',
         ];
 
-        foreach ( $quartiers as $i => $quartier){
+        foreach ($quartiers as $i => $quartier) {
             $entity = new Quartier();
             $entity->setName($quartier);
             $manager->persist($entity);

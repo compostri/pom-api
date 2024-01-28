@@ -260,7 +260,7 @@ class User implements UserInterface
         $this->plainPassword = $plainPassword;
         // forces the object to look "dirty" to Doctrine. Avoids
         // Doctrine *not* saving this entity, if only plainPassword changes
-        $this->setLastUpdateDate( new \DateTime() );
+        $this->setLastUpdateDate(new \DateTime());
         return $this;
     }
 
@@ -280,7 +280,7 @@ class User implements UserInterface
     /**
      * @see UserInterface
      */
-    public function eraseCredentials() : void
+    public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
         $this->plainPassword = null;
@@ -362,13 +362,11 @@ class User implements UserInterface
      * @param Composter $composter
      * @return null|UserComposter
      */
-    public function getUserCompostersFor( Composter $composter): ?UserComposter
+    public function getUserCompostersFor(Composter $composter): ?UserComposter
     {
-
         $userComposter = null;
-        foreach ( $this->getUserComposters() as $uc ){
-
-            if( $uc->getComposter()->getId() === $composter->getId() ){
+        foreach ($this->getUserComposters() as $uc) {
+            if ($uc->getComposter()->getId() === $composter->getId()) {
                 $userComposter = $uc;
                 break;
             }

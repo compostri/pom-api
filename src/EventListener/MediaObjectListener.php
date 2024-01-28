@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\EventListener;
 
 use App\Entity\MediaObject;
@@ -15,12 +14,11 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class MediaObjectListener
 {
-
     private $parameterBag;
     private $urlHelper;
     private $params;
 
-    public function __construct(ParameterBagInterface $parameterBag,  UrlHelper $urlHelper, ContainerBagInterface $params)
+    public function __construct(ParameterBagInterface $parameterBag, UrlHelper $urlHelper, ContainerBagInterface $params)
     {
         $this->parameterBag = $parameterBag;
         $this->urlHelper = $urlHelper;
@@ -61,8 +59,6 @@ class MediaObjectListener
      */
     private function uploadMedia(MediaObject $mediaObject): void
     {
-
-
         $data = $mediaObject->getData();
         if (!$data) {
             throw new BadRequestHttpException('Paramétre "data" obligatoire');
@@ -71,7 +67,7 @@ class MediaObjectListener
         $uploadDir = $this->parameterBag->get('upload_destination');
 
         // Fonction qui renome si besoin les fichier pour éviter les doublons
-        $this->setRealFileName( $mediaObject );
+        $this->setRealFileName($mediaObject);
 
         $webPath =  $uploadDir. $mediaObject->getImageName();
 
@@ -90,7 +86,6 @@ class MediaObjectListener
 
         // On retaille les images
         if ($this->isImage($newFile)) {
-
             $manager = new ImageManager(array('driver' => 'imagick'));
 
             $manager->make($webPath)
@@ -99,10 +94,8 @@ class MediaObjectListener
                 })
                 ->save($webPath);
 
-            $mediaObject->setImageDimensions( getimagesize($webPath ) );
+            $mediaObject->setImageDimensions(getimagesize($webPath));
         }
-
-
     }
 
     /**
@@ -111,8 +104,7 @@ class MediaObjectListener
      */
     private function getAbsoluteUrl(string $imageName): string
     {
-
-        $dir = str_replace($this->params->get('kernel.project_dir') . '/public', '',  $this->params->get('upload_destination'));
+        $dir = str_replace($this->params->get('kernel.project_dir') . '/public', '', $this->params->get('upload_destination'));
         return $this->urlHelper->getAbsoluteUrl($dir . $imageName);
     }
 
@@ -124,7 +116,7 @@ class MediaObjectListener
     {
         $mimeType = $file->getMimeType();
 
-        return strpos( $mimeType, 'image' ) === 0;
+        return strpos($mimeType, 'image') === 0;
     }
 
 
@@ -133,7 +125,7 @@ class MediaObjectListener
      *
      * @param MediaObject $mediaObject
      */
-    private function setRealFileName( MediaObject $mediaObject ): void
+    private function setRealFileName(MediaObject $mediaObject): void
     {
         $imageName = $mediaObject->getImageName();
 
@@ -143,10 +135,9 @@ class MediaObjectListener
 
         $uploadDir = $this->parameterBag->get('upload_destination');
         // On rénome les fichiers qui ont le même nom
-        if (file_exists( $uploadDir . $imageName )) {
+        if (file_exists($uploadDir . $imageName)) {
             $imageName = preg_replace('/(.)([^.]+)$/', '-' . uniqid('', false) . '.$2', $imageName);
             $mediaObject->setImageName($imageName);
         }
-
     }
 }

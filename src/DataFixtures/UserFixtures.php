@@ -20,12 +20,11 @@ class UserFixtures extends Fixture
     public function __construct()
     {
         $this->faker = Factory::create('fr_FR');
-
     }
 
     public function load(ObjectManager $manager)
     {
-        for ($i = 0; $i < 10; $i++){
+        for ($i = 0; $i < 10; $i++) {
             // Create 10 maitre composter user
             $user = new User();
             $user->setRoles(['ROLE_ADMIN']);
@@ -49,7 +48,7 @@ class UserFixtures extends Fixture
         }
 
 
-        for ($i = 0; $i < 100; $i++){
+        for ($i = 0; $i < 100; $i++) {
             // Create 100 utilisateurs
             $user = new User();
             $user->setRoles(['ROLE_User']);
