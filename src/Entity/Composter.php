@@ -156,6 +156,7 @@ class Composter
      * Name of the Maitre Composter
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="mcComposters")
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
      * @Groups({"composter"})
      */
     private $mc;
@@ -286,7 +287,7 @@ class Composter
      * @ORM\Column(type="bigint", nullable=true)
      * @Groups({"composter"})
      */
-    private $mailjetListID;
+    private int $mailjetListID;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -951,7 +952,7 @@ class Composter
         return $this->mailjetListID;
     }
 
-    public function setMailjetListID(?string $mailjetListID): self
+    public function setMailjetListID(?int $mailjetListID): self
     {
         $this->mailjetListID = $mailjetListID;
 
