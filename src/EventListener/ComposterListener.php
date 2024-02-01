@@ -10,7 +10,7 @@ class ComposterListener
     /**
      * @var Mailjet
      */
-    private $mj;
+    private Mailjet $mj;
 
 
     /**

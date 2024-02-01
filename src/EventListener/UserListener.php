@@ -80,6 +80,10 @@ class UserListener
         if (isset($changeSet['isSubscribeToCompostriNewsletter'])) {
             if ($user->getIsSubscribeToCompostriNewsletter()) {
                 $this->email->addUser($user);
+
+                // Sauvegarder l'id
+                $this->em->persist($user);
+                $this->em->flush();
             } else {
                 $this->email->removeFromList($user->getMailjetId(), [getenv('MJ_COMPOSTRI_NEWSLETTER_CONTACT_LIST_ID')]);
             }

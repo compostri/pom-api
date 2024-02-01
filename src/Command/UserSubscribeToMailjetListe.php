@@ -39,14 +39,8 @@ class UserSubscribeToMailjetListe extends Command
             ->findUnattacheToMailJet();
 
         foreach ($users as $user) {
-            $response = $this->mailjet->addUser($user);
-
-            if ($response && $response->success()) {
-                $this->em->persist($user);
-                $output->writeln("Success : {$user->getEmail()}");
-            } else {
-                $output->writeln("Error : {$user->getEmail()}");
-            }
+            $this->mailjet->addUser($user);
+            $this->em->persist($user);
         }
 
         $this->em->flush();

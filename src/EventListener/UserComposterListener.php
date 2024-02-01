@@ -5,8 +5,10 @@ namespace App\EventListener;
 use App\DBAL\Types\CapabilityEnumType;
 use App\Entity\UserComposter;
 use App\Service\Mailjet;
+use Brevo\Client\Api\TransactionalEmailsApi;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
@@ -24,6 +26,8 @@ class UserComposterListener
      */
     private $tokenGenerator;
 
+    private LoggerInterface $logger;
+
 
     /**
      * UserListener constructor.
@@ -31,11 +35,12 @@ class UserComposterListener
      * @param EntityManagerInterface $entityManager
      * @param TokenGeneratorInterface $tokenGenerator
      */
-    public function __construct(Mailjet $email, EntityManagerInterface $entityManager, TokenGeneratorInterface $tokenGenerator)
+    public function __construct(Mailjet $email, EntityManagerInterface $entityManager, TokenGeneratorInterface $tokenGenerator, LoggerInterface $logger)
     {
         $this->email            = $email;
         $this->entityManager    = $entityManager;
         $this->tokenGenerator   = $tokenGenerator;
+        $this->logger   = $logger;
     }
 
     public function postPersist(UserComposter $userComposter): void
@@ -56,12 +61,16 @@ class UserComposterListener
     public function postUpdate(UserComposter $userComposter, LifecycleEventArgs $eventArgs)
     {
 
-        // Si on change l'abonnement a la newsletter on envoie l'information a MailJet
+        // Si on change l'abonnement à la newsletter, on envoie l'information à MailJet
         $changeSet = $eventArgs->getEntityManager()->getUnitOfWork()->getEntityChangeSet($userComposter);
+        $user = $userComposter->getUser();
         if (isset($changeSet['newsletter'])) {
             if ($userComposter->getNewsletter()) {
-                // Si le user c'est abonné a là newsletter du composteur on l'y ajoute
-                $this->email->addUser($userComposter->getUser());
+                // Si le user c'est abonné à là newsletter du composteur, on l'y ajoute
+                $this->email->addUser($user);
+                // Sauvegarder l'id
+                $this->entityManager->persist($user);
+                $this->entityManager->flush();
             } else {
                 // Sinon on le désabonne
                 $this->email->removeFromList($userComposter->getUser()->getMailjetId(), [$userComposter->getComposter()->getMailjetListID()]);
@@ -69,7 +78,6 @@ class UserComposterListener
         }
 
         // Si on change les droits du l'utilisateur et qu'il n'a plus des droits ouvreur il faut désactivé l'utilisateur
-        $user = $userComposter->getUser();
         $this->sendConfirmationMail($userComposter);
         if ($userComposter->getCapability() === CapabilityEnumType::USER) {
             $disabled = true;
@@ -102,10 +110,10 @@ class UserComposterListener
             if ($userConfirmedAccountURL) {
                 $this->email->send([
                     [
-                        'To' => [['Email' => $user->getEmail(), 'Name' => $user->getUsername()]],
-                        'Subject' => '[Compostri] Confirmer votre compte',
-                        'TemplateID' => (int)getenv('MJ_VERIFIED_ACCOUNT_TEMPLATE_ID'),
-                        'Variables' => ['recovery_password_url' => "{$userConfirmedAccountURL}?token={$user->getResetToken()}"]
+                        'to' => [['Email' => $user->getEmail(), 'Name' => $user->getUsername()]],
+                        'subject' => '[Compostri] Confirmer votre compte',
+                        'templateId' => (int)getenv('MJ_VERIFIED_ACCOUNT_TEMPLATE_ID'),
+                        'params' => ['recovery_password_url' => "{$userConfirmedAccountURL}?token={$user->getResetToken()}"]
                     ]
                 ]);
             } else {

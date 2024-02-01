@@ -113,12 +113,6 @@
     "gesdinet/jwt-refresh-token-bundle": {
         "version": "v0.8.2"
     },
-    "guzzlehttp/guzzle": {
-        "version": "6.3.3"
-    },
-    "guzzlehttp/promises": {
-        "version": "v1.3.1"
-    },
     "guzzlehttp/psr7": {
         "version": "1.5.2"
     },
@@ -154,9 +148,6 @@
             "version": "2.5",
             "ref": "509b1542f3180a1cfe248ade8b7bf5092c2d4127"
         }
-    },
-    "mailjet/mailjet-apiv3-php": {
-        "version": "v1.4.1"
     },
     "michelf/php-markdown": {
         "version": "1.9.0"
@@ -199,9 +190,6 @@
     },
     "psr/container": {
         "version": "1.0.0"
-    },
-    "psr/http-client": {
-        "version": "1.0.1"
     },
     "psr/http-factory": {
         "version": "1.0.1"

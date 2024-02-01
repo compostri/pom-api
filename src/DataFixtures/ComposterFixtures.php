@@ -94,7 +94,6 @@ class ComposterFixtures extends Fixture implements DependentFixtureInterface
             $composter->setDateMiseEnRoute($this->faker->dateTimeBetween($inaugurationDate));
 
             $composter->setPermanencesDescription($this->faker->paragraph);
-            $composter->setPermanencesRule($this->faker->paragraphs(3, true));
             $composter->setPublicDescription($this->faker->paragraphs(3, true));
             $composter->setSerialNumber($i + 1);
 

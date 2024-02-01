@@ -287,7 +287,7 @@ class Composter
      * @ORM\Column(type="bigint", nullable=true)
      * @Groups({"composter"})
      */
-    private int $mailjetListID;
+    private ?int $mailjetListID;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -947,7 +947,7 @@ class Composter
         return $this;
     }
 
-    public function getMailjetListID(): ?string
+    public function getMailjetListID(): ?int
     {
         return $this->mailjetListID;
     }
