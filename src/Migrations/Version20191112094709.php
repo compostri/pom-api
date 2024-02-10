@@ -20,7 +20,7 @@ final class Version20191112094709 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE user_composter ADD notif TINYINT(1) DEFAULT \'1\' NOT NULL, ADD newsletter TINYINT(1) DEFAULT \'0\' NOT NULL, ADD composter_contact_receiver TINYINT(1) DEFAULT \'0\' NOT NULL');
     }
@@ -28,7 +28,7 @@ final class Version20191112094709 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE user_composter DROP notif, DROP newsletter, DROP composter_contact_receiver');
     }

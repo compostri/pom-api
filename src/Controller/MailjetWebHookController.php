@@ -14,13 +14,11 @@ class MailjetWebHookController extends AbstractController
 {
     /**
      * @Route("/user_unsub", name="user_unsub")
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        if ($data && $data['event'] === 'unsub') {
+        if ($data && 'unsub' === $data['event']) {
             $email = $data['email'];
             $mj_list_id = $data['mj_list_id'];
 
@@ -33,7 +31,7 @@ class MailjetWebHookController extends AbstractController
             $composter = $composterRepo->findOneBy(['mailjetListID' => $mj_list_id]);
 
             if ($user && $composter) {
-                $uc = $userComposterRepo->findOneBy(['user'=>$user, 'composter' => $composter]);
+                $uc = $userComposterRepo->findOneBy(['user' => $user, 'composter' => $composter]);
                 if ($uc instanceof UserComposter) {
                     $uc->setNewsletter(false);
                     $em->persist($uc);
@@ -41,6 +39,7 @@ class MailjetWebHookController extends AbstractController
                 }
             }
         }
+
         return $this->json([]);
     }
 }

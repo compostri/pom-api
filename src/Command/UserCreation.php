@@ -36,6 +36,7 @@ class UserCreation extends Command
             ->addArgument('email', InputArgument::REQUIRED, 'email')
         ;
     }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $username = $input->getArgument('username');
@@ -54,7 +55,7 @@ class UserCreation extends Command
             ->setPlainPassword($password)
             ->setUsername($username)
             ->setRoles(['ROLE_ADMIN'])
-            ->setUserConfirmedAccountURL(getenv('FRONT_DOMAIN') . '/confirmation')
+            ->setUserConfirmedAccountURL(getenv('FRONT_DOMAIN').'/confirmation')
             ->setIsSubscribeToCompostriNewsletter(false)
             ->setEnabled(true);
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Send user notification
+ * Send user notification.
  */
 
 namespace App\Command;
@@ -43,11 +43,11 @@ class UserNotification extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
         //$entityManager = $this->getContainer()->get('doctrine')->getManager();
         $permanenceRepo = $this->em->getRepository(Permanence::class);
 
         $permancesToComme = $permanenceRepo->findAllToNotify();
+
         $messages = [];
 
         foreach ($permancesToComme as $perm) {
@@ -71,35 +71,35 @@ class UserNotification extends Command
         }
 
         if (count($messages) > 0) {
-            $response = $this->mailjet->send($messages);
+            $this->mailjet->send($messages);
         }
         $this->em->flush();
     }
 
-    private function getFormatMessage(User $opener, Permanence $perm)
+    private function getFormatMessage(User $opener, Permanence $perm): array
     {
         $firstReferent = $perm->getComposter()->getFirstReferent();
 
-        $formattedMessage =  [
-            'To' => [
+        $formattedMessage = [
+            'to' => [
                 [
-                    'Email' => $opener->getEmail(), // $mail
-                    'Name'  => $opener->getUsername()
-                ]
+                    'email' => $opener->getEmail(), // $mail
+                    'name' => $opener->getUsername(),
+                ],
             ],
-            'TemplateID'        => (int)getenv('MJ_NOTIFICATION_TEMPLATE_ID'),
-            'Subject'           => "[{$perm->getComposter()->getName()}] C'est bientôt à vous d'ouvrir",
-            'Variables'         => [
-                'prenom'            => $opener->getFirstname(),
-                'date'              => $perm->getDate()->format('d/m/Y'),
-                'openingProcedure'  => $perm->getComposter()->getOpeningProcedures()
-            ]
+            'templateId' => (int) getenv('MJ_NOTIFICATION_TEMPLATE_ID'),
+            'subject' => "[{$perm->getComposter()->getName()}] C'est bientôt à vous d'ouvrir",
+            'params' => [
+                'prenom' => $opener->getFirstname(),
+                'date' => $perm->getDate()->format('d/m/Y'),
+                'openingProcedure' => $perm->getComposter()->getOpeningProcedures(),
+            ],
         ];
 
         if ($firstReferent) {
-            $formattedMessage['ReplyTo'] = [
-                'Email' => $firstReferent->getUser()->getEmail(),
-                'Name'  => $firstReferent->getUser()->getUsername()
+            $formattedMessage['replyTo'] = [
+                'email' => $firstReferent->getUser()->getEmail(),
+                'name' => $firstReferent->getUser()->getUsername(),
             ];
         }
 

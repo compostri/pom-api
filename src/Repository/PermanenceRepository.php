@@ -21,9 +21,10 @@ class PermanenceRepository extends ServiceEntityRepository
 
     /**
      * @throws
+     *
      * @return Permanence[] Returns an array of Permanence objects
      */
-    public function findAllToNotify()
+    public function findAllToNotify(): array
     {
         $today = new \DateTime();
         $dateMax = new \DateTime();

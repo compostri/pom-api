@@ -5,19 +5,19 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
-use App\Filter\YearFilter;
 use App\DBAL\Types\CapabilityEnumType;
+use App\Filter\YearFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * Composter. Lieux ou l'on transform les bio déchets en composte
+ * Composter. Lieux ou l'on transform les bio déchets en composte.
  *
  * @ORM\Entity(repositoryClass="App\Repository\ComposterRepository")
  * @ApiResource(
@@ -78,7 +78,6 @@ class Composter
      * @ApiProperty(identifier=true)
      */
     private $slug;
-
 
     /**
      * @var string The short description of the composter to be shown on the composter page
@@ -153,7 +152,7 @@ class Composter
     private $equipement;
 
     /**
-     * Name of the Maitre Composter
+     * Name of the Maitre Composter.
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="mcComposters")
      * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
@@ -236,7 +235,6 @@ class Composter
      * @Groups({"composter"})
      */
     private $acceptNewMembers;
-
 
     /**
      * @var MediaObject|null
@@ -373,7 +371,6 @@ class Composter
      */
     private $AlimentsNonAutorises;
 
-
     public function __construct()
     {
         $this->permanences = new ArrayCollection();
@@ -392,7 +389,6 @@ class Composter
     {
         return $this->getName();
     }
-
 
     public function getId(): ?int
     {
@@ -732,7 +728,6 @@ class Composter
         return $this;
     }
 
-
     public function getCategorie(): ?Categorie
     {
         return $this->categorie;
@@ -788,15 +783,12 @@ class Composter
         return $this;
     }
 
-    /**
-     * @return UserComposter|null
-     */
     public function getFirstReferent(): ?UserComposter
     {
         $firstReferent = null;
 
         foreach ($this->getUserComposters() as $user) {
-            if ($user->getCapability() === CapabilityEnumType::REFERENT) {
+            if (CapabilityEnumType::REFERENT === $user->getCapability()) {
                 $firstReferent = $user;
                 break;
             }
@@ -856,6 +848,7 @@ class Composter
     public function setImage(?MediaObject $image): self
     {
         $this->image = $image;
+
         return $this;
     }
 

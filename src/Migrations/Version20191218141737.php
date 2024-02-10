@@ -20,7 +20,7 @@ final class Version20191218141737 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE livraison_broyat ADD livreur_id INT DEFAULT NULL, DROP unite, DROP livreur');
         $this->addSql('ALTER TABLE livraison_broyat ADD CONSTRAINT FK_4D62E3FEF8646701 FOREIGN KEY (livreur_id) REFERENCES approvisionnement_broyat (id)');
@@ -30,7 +30,7 @@ final class Version20191218141737 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE livraison_broyat DROP FOREIGN KEY FK_4D62E3FEF8646701');
         $this->addSql('DROP INDEX IDX_4D62E3FEF8646701 ON livraison_broyat');

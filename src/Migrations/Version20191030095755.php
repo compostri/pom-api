@@ -20,7 +20,7 @@ final class Version20191030095755 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('UPDATE composter SET `status` = \'Active\'');
         $this->addSql('ALTER TABLE composter CHANGE status status ENUM(\'Active\', \'Delete\', \'Moved\', \'ToBeMoved\', \'Dormant\', \'InProject\') DEFAULT \'Active\' NOT NULL COMMENT \'(DC2Type:enumstatus)\'');
@@ -29,7 +29,7 @@ final class Version20191030095755 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE composter CHANGE status status VARCHAR(255) NOT NULL COLLATE utf8mb4_unicode_ci');
     }

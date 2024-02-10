@@ -2,17 +2,17 @@
 
 namespace App\Entity;
 
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
@@ -76,7 +76,6 @@ class User implements UserInterface
      */
     private $plainPassword;
 
-
     /**
      * @Groups({"user:write"})
      */
@@ -123,10 +122,11 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     *
      * @var string userConfirmedAccountURL Url pour gérer la confirmation du compte.
-     *      Un lien sera créé et envoyé à cette URL de type {userConfirmedAccountURL}?token=token
-     *      Il faudra utiliser le endpoint `user_password_changes` et renvoyer un mot de passe et le token
-     *      Cela aura pour effet de vérifier le compte ( passer enabled a true )
+     *             Un lien sera créé et envoyé à cette URL de type {userConfirmedAccountURL}?token=token
+     *             Il faudra utiliser le endpoint `user_password_changes` et renvoyer un mot de passe et le token
+     *             Cela aura pour effet de vérifier le compte ( passer enabled a true )
      * @Groups({"user:write", "userComposter:write"})
      */
     private $userConfirmedAccountURL;
@@ -170,7 +170,6 @@ class User implements UserInterface
      * @Groups({"user","userComposter:write"})
      */
     private $isSubscribeToCompostriNewsletter;
-
 
     public function __construct()
     {
@@ -261,6 +260,7 @@ class User implements UserInterface
         // forces the object to look "dirty" to Doctrine. Avoids
         // Doctrine *not* saving this entity, if only plainPassword changes
         $this->setLastUpdateDate(new \DateTime());
+
         return $this;
     }
 
@@ -358,10 +358,6 @@ class User implements UserInterface
         return $this->userComposters;
     }
 
-    /**
-     * @param Composter $composter
-     * @return null|UserComposter
-     */
     public function getUserCompostersFor(Composter $composter): ?UserComposter
     {
         $userComposter = null;
@@ -454,9 +450,6 @@ class User implements UserInterface
         return $this->userConfirmedAccountURL;
     }
 
-    /**
-     * @param string $userConfirmedAccountURL
-     */
     public function setUserConfirmedAccountURL(string $userConfirmedAccountURL): self
     {
         $this->userConfirmedAccountURL = $userConfirmedAccountURL;

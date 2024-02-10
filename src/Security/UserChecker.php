@@ -16,15 +16,13 @@ class UserChecker implements UserCheckerInterface
         }
 
         // user is deleted, show a generic Account Not Found message.
-        if (! $user->getEnabled()) {
+        if (!$user->getEnabled()) {
             throw new AccountExpiredException('Utilisateur pas encore vérifié');
         }
     }
 
     /**
      * Checks the user account after authentication.
-     *
-     * @param UserInterface $user
      */
     public function checkPostAuth(UserInterface $user): void
     {

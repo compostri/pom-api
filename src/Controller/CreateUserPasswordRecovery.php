@@ -14,11 +14,11 @@ class CreateUserPasswordRecovery extends AbstractController
     public function __invoke(UserPasswordRecovery $data, TokenGeneratorInterface $tokenGenerator, Mailjet $email): UserPasswordRecovery
     {
         $em = $this->getDoctrine()->getManager();
-        $user =  $this->getDoctrine()
+        $user = $this->getDoctrine()
             ->getRepository(User::class)
-            ->findOneBy([ 'email' => $data->getEmail(), 'enabled' => true ]);
+            ->findOneBy(['email' => $data->getEmail(), 'enabled' => true]);
 
-        if (! $user) {
+        if (!$user) {
             throw new BadRequestHttpException('Aucun utilisateur trouvé');
         }
 
@@ -31,14 +31,15 @@ class CreateUserPasswordRecovery extends AbstractController
 
         $email->send([
             [
-                'To'            => [['Email' => $user->getEmail() , 'Name' => $user->getUsername() ]],
-                'Subject'       => '[Compostri] Demande de récupération de mot de passe',
-                'TemplateID'    => (int) getenv('MJ_PASSWORD_RECOVERY_TEMPLATE_ID'),
-                'Variables'     => [ 'recovery_password_url' => "{$newPasswordUrl}?token={$resetToken}"]
-            ]
+                'To' => [['Email' => $user->getEmail(), 'Name' => $user->getUsername()]],
+                'Subject' => '[Compostri] Demande de récupération de mot de passe',
+                'TemplateID' => (int) getenv('MJ_PASSWORD_RECOVERY_TEMPLATE_ID'),
+                'Variables' => ['recovery_password_url' => "{$newPasswordUrl}?token={$resetToken}"],
+            ],
         ]);
 
         $data->setId($user->getId());
+
         return $data;
     }
 }

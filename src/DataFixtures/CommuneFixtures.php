@@ -10,9 +10,6 @@ use Faker\Generator;
 
 class CommuneFixtures extends Fixture
 {
-    /**
-     * @var Generator
-     */
     private Generator $faker;
 
     public function __construct()
@@ -21,18 +18,17 @@ class CommuneFixtures extends Fixture
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function load(ObjectManager $manager)
     {
-        for ($i = 0; $i < 20; $i++) {
+        for ($i = 0; $i < 20; ++$i) {
             $commune = new Commune();
             $commune->setName($this->faker->city);
             $manager->persist($commune);
 
-            $this->addReference('commune_' . $i, $commune);
+            $this->addReference('commune_'.$i, $commune);
         }
-
 
         $manager->flush();
     }

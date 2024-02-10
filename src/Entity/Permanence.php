@@ -4,25 +4,24 @@
  * Created by PhpStorm.
  * User: arnaudbanvillet
  * Date: 12/10/2018
- * Time: 13:19
+ * Time: 13:19.
  */
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
-use App\Entity\User;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * A Permanence
+ * A Permanence.
  *
  * @ORM\Entity(repositoryClass="App\Repository\PermanenceRepository")
  *
@@ -64,7 +63,7 @@ class Permanence
     public $date;
 
     /**
-     * @var \Boolean Permanence is canceled
+     * @var \boolean Permanence is canceled
      *
      * @ORM\Column(type="boolean", options={"default" : false})
      * @Groups({"permanence"})
@@ -143,14 +142,12 @@ class Permanence
      */
     public $weight;
 
-
     /**
      * @var bool has users been notify
      *
      * @ORM\Column(type="boolean", options={"default" : false})
      */
     public $hasUsersBeenNotify;
-
 
     public function __construct()
     {
@@ -161,7 +158,7 @@ class Permanence
 
     public function __toString()
     {
-        return $this->getDate() ? $this->getDate()->format('Y-m-d H:i:s') : ( string ) $this->getId();
+        return $this->getDate() ? $this->getDate()->format('Y-m-d H:i:s') : (string) $this->getId();
     }
 
     public function getId(): ?int
@@ -232,7 +229,6 @@ class Permanence
 
         return $this;
     }
-
 
     public function getNbUsers()
     {

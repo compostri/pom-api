@@ -9,7 +9,7 @@ use Doctrine\ORM\QueryBuilder;
 class YearFilter extends AbstractContextAwareFilter
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getDescription(string $resourceClass): array
     {
@@ -22,7 +22,7 @@ class YearFilter extends AbstractContextAwareFilter
             $description[$property] = [
                 'property' => $property,
                 'type' => 'string',
-                'required' => false
+                'required' => false,
             ];
         }
 

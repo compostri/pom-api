@@ -70,7 +70,7 @@ class EquipementFixtures extends Fixture
             [
                 'type' => '2 Silos 7,5 m3 + BB 1300',
                 'capacite' => '2 x 3 x 2,5 = 15m3',
-            ]
+            ],
         ];
 
         foreach ($equipements as $i => $equipement) {
@@ -79,7 +79,7 @@ class EquipementFixtures extends Fixture
             $entity->setCapacite($equipement['capacite']);
             $manager->persist($entity);
 
-            $this->addReference('equipement_' . $i, $entity);
+            $this->addReference('equipement_'.$i, $entity);
         }
 
         $manager->flush();

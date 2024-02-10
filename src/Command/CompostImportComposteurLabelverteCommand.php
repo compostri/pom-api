@@ -7,7 +7,6 @@ use App\DBAL\Types\ContactEnumType;
 use App\DBAL\Types\StatusEnumType;
 use App\Entity\Commune;
 use App\Entity\Composter;
-use App\Entity\ComposterContact;
 use App\Entity\Contact;
 use App\Entity\Equipement;
 use App\Entity\User;
@@ -21,7 +20,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class CompostImportComposteurLabelverteCommand extends Command
@@ -93,7 +91,7 @@ class CompostImportComposteurLabelverteCommand extends Command
                         if ($composteur) {
                             $this->em->persist($composteur);
 
-                            $composterCount++;
+                            ++$composterCount;
                         }
                     }
 //                    else {
@@ -120,20 +118,20 @@ class CompostImportComposteurLabelverteCommand extends Command
 
     /**
      * @param Cell[] $cells
+     *
      * @return Composter
      */
     private function getComposteurs($cells, int $installationYear): ?Composter
     {
         $plateNumber = (string) $cells[0];
         $composteurRepo = $this->em->getRepository(Composter::class);
-        $composteur = $composteurRepo->findOneBy(['plateNumber' => $plateNumber ]);
+        $composteur = $composteurRepo->findOneBy(['plateNumber' => $plateNumber]);
 
-        if (! $composteur) {
+        if (!$composteur) {
             $composteur = new Composter();
         }
 
         $dateIgnoguration = $cells[70]->isDate() ? $cells[70]->getValue() : null;
-
 
         $composteur
             ->setPlateNumber($plateNumber)
@@ -179,16 +177,16 @@ class CompostImportComposteurLabelverteCommand extends Command
 
         if (count($fullNameArray) < 2) {
             $this->output->writeln($fullName);
+
             return null;
         }
         $firstName = $fullNameArray[0];
         $LastName = $fullNameArray[1];
 
         $userRepo = $this->em->getRepository(User::class);
-        $mc = $userRepo->findOneBy(['firstname' => $firstName, 'lastname' => $LastName ]);
+        $mc = $userRepo->findOneBy(['firstname' => $firstName, 'lastname' => $LastName]);
 
-
-        if (! $mc) {
+        if (!$mc) {
             $mc = new User();
             $mc
                 ->setFirstname($firstName)
@@ -198,7 +196,7 @@ class CompostImportComposteurLabelverteCommand extends Command
                 ->setRoles($role)
                 ->setPhone($phone)
                 ->setPlainPassword('tobechanged')
-                ->setUserConfirmedAccountURL(getenv('FRONT_DOMAIN') . '/confirmation')
+                ->setUserConfirmedAccountURL(getenv('FRONT_DOMAIN').'/confirmation')
                 ->setIsSubscribeToCompostriNewsletter(false)
                 ->setEnabled(true)
                 ->setMailjetId(10)
@@ -248,7 +246,7 @@ class CompostImportComposteurLabelverteCommand extends Command
         $userRepo = $this->em->getRepository(Commune::class);
         $commune = $userRepo->findOneBy(['name' => $communeName]);
 
-        if (! $commune) {
+        if (!$commune) {
             $commune = new Commune();
 
             $commune->setName($communeName);
@@ -274,7 +272,7 @@ class CompostImportComposteurLabelverteCommand extends Command
         $ucr = $this->em->getRepository(UserComposter::class);
         $userComposter = $ucr->findOneBy(['user' => $user, 'composter' => $composter]);
 
-        if (! $userComposter) {
+        if (!$userComposter) {
             $userComposter = new UserComposter();
             $userComposter
                 ->setUser($user)
@@ -292,12 +290,12 @@ class CompostImportComposteurLabelverteCommand extends Command
 
     private function cleanPhoneNumber(string $phoneNumber): ?string
     {
-        return $phoneNumber !== 'X' ? str_replace([' ', '-'], '', $phoneNumber) : null;
+        return 'X' !== $phoneNumber ? str_replace([' ', '-'], '', $phoneNumber) : null;
     }
 
     private function getContact(string $fullName, string $phone, string $role): ?Contact
     {
-        if (empty($fullName) || in_array($fullName, [ 'x', 'X', '/', 'oui', 'Non'])) {
+        if (empty($fullName) || in_array($fullName, ['x', 'X', '/', 'oui', 'Non'])) {
             return null;
         }
 
@@ -305,16 +303,16 @@ class CompostImportComposteurLabelverteCommand extends Command
 
         if (count($fullNameArray) < 2) {
             $this->output->writeln($fullName);
+
             return null;
         }
         $firstName = $fullNameArray[0];
         $LastName = $fullNameArray[1];
 
         $contactRepo = $this->em->getRepository(Contact::class);
-        $contact = $contactRepo->findOneBy(['firstName' => $firstName, 'lastName' => $LastName ]);
+        $contact = $contactRepo->findOneBy(['firstName' => $firstName, 'lastName' => $LastName]);
 
-
-        if (! $contact) {
+        if (!$contact) {
             $contact = new Contact();
             $contact
                 ->setFirstname($firstName)
@@ -339,9 +337,9 @@ class CompostImportComposteurLabelverteCommand extends Command
         }
 
         $er = $this->em->getRepository(Equipement::class);
-        $equipement = $er->findOneBy(['type' => $type, 'capacite' => $capacity ]);
+        $equipement = $er->findOneBy(['type' => $type, 'capacite' => $capacity]);
 
-        if (! $equipement) {
+        if (!$equipement) {
             $equipement = new Equipement();
             $equipement
                 ->setCapacite($capacity)

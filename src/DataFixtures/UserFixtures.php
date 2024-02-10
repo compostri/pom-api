@@ -2,9 +2,9 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use App\Entity\User;
 use Faker\Factory;
 use Faker\Generator;
 
@@ -12,9 +12,6 @@ use Faker\Generator;
 
 class UserFixtures extends Fixture
 {
-    /**
-     * @var Generator
-     */
     private Generator $faker;
 
     public function __construct()
@@ -24,7 +21,7 @@ class UserFixtures extends Fixture
 
     public function load(ObjectManager $manager)
     {
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 10; ++$i) {
             // Create 10 maitre composter user
             $user = new User();
             $user->setRoles(['ROLE_ADMIN']);
@@ -44,11 +41,10 @@ class UserFixtures extends Fixture
 
             $manager->persist($user);
 
-            $this->setReference('mc_' . $i, $user);
+            $this->setReference('mc_'.$i, $user);
         }
 
-
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 100; ++$i) {
             // Create 100 utilisateurs
             $user = new User();
             $user->setRoles(['ROLE_User']);

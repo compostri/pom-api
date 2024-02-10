@@ -2,7 +2,6 @@
 
 namespace App\Command;
 
-use App\Entity\Composter;
 use App\Entity\User;
 use App\Service\Mailjet;
 use Doctrine\ORM\EntityManagerInterface;

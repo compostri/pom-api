@@ -20,7 +20,7 @@ final class Version20191120165127 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE composter DROP FOREIGN KEY FK_FCFE9BAC3DA5256D');
         $this->addSql('ALTER TABLE composter ADD CONSTRAINT FK_FCFE9BAC3DA5256D FOREIGN KEY (image_id) REFERENCES media_object (id) ON DELETE SET NULL');
@@ -29,7 +29,7 @@ final class Version20191120165127 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE composter DROP FOREIGN KEY FK_FCFE9BAC3DA5256D');
         $this->addSql('ALTER TABLE composter ADD CONSTRAINT FK_FCFE9BAC3DA5256D FOREIGN KEY (image_id) REFERENCES media_object (id)');

@@ -13,9 +13,6 @@ use Faker\Generator;
 
 class ComposterFixtures extends Fixture implements DependentFixtureInterface
 {
-    /**
-     * @var Generator
-     */
     private Generator $faker;
 
     public function __construct()
@@ -24,48 +21,48 @@ class ComposterFixtures extends Fixture implements DependentFixtureInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function load(ObjectManager $manager)
     {
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 100; ++$i) {
             $composter = new Composter();
             $composter->setCommune(
-                $this->getReference('commune_' . $this->faker->numberBetween(0, 19))
+                $this->getReference('commune_'.$this->faker->numberBetween(0, 19))
             );
             $composter->setCategorie(
                 $this->faker->boolean(80) ?
-                    $this->getReference('categorie_' . $this->faker->numberBetween(0, 4))
+                    $this->getReference('categorie_'.$this->faker->numberBetween(0, 4))
                     :
                     null
             );
             $composter->setApprovisionnementBroyat(
                 $this->faker->boolean(80) ?
-                    $this->getReference('approvisionnement_broyat_' . $this->faker->numberBetween(0, 5))
+                    $this->getReference('approvisionnement_broyat_'.$this->faker->numberBetween(0, 5))
                     :
                     null
             );
             $composter->setPole(
                 $this->faker->boolean(80) ?
-                    $this->getReference('pole_' . $this->faker->numberBetween(0, 6))
+                    $this->getReference('pole_'.$this->faker->numberBetween(0, 6))
                     :
                     null
             );
             $composter->setQuartier(
                 $this->faker->boolean(80) ?
-                    $this->getReference('quartier_' . $this->faker->numberBetween(0, 16))
+                    $this->getReference('quartier_'.$this->faker->numberBetween(0, 16))
                     :
                     null
             );
             $composter->setEquipement(
                 $this->faker->boolean(80) ?
-                    $this->getReference('equipement_' . $this->faker->numberBetween(0, 14))
+                    $this->getReference('equipement_'.$this->faker->numberBetween(0, 14))
                     :
                     null
             );
             $composter->setMc(
                 $this->faker->boolean(90) ?
-                    $this->getReference('mc_' . $this->faker->numberBetween(0, 9))
+                    $this->getReference('mc_'.$this->faker->numberBetween(0, 9))
                     :
                     null
             );
@@ -111,8 +108,8 @@ class ComposterFixtures extends Fixture implements DependentFixtureInterface
             $composter->setNbDeposant($this->faker->boolean ? $this->faker->numberBetween(0, $nbInscrit) : null);
             $composter->setNbFoyersPotentiels($this->faker->boolean ? $this->faker->numberBetween($nbInscrit, 150) : null);
 
-            $composter->setFinanceurSuivi($this->faker->boolean ? $this->getReference('financeur_' . $this->faker->numberBetween(0, 9)) : null);
-            $composter->setFinanceur($this->faker->boolean ? $this->getReference('financeur_' . $this->faker->numberBetween(0, 9)) : null);
+            $composter->setFinanceurSuivi($this->faker->boolean ? $this->getReference('financeur_'.$this->faker->numberBetween(0, 9)) : null);
+            $composter->setFinanceur($this->faker->boolean ? $this->getReference('financeur_'.$this->faker->numberBetween(0, 9)) : null);
 
             $manager->persist($composter);
         }

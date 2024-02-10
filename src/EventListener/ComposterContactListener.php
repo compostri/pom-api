@@ -2,15 +2,12 @@
 
 namespace App\EventListener;
 
+use App\Entity\ComposterContact;
 use App\Service\Mailjet;
 use Brevo\Client\ApiException;
-use App\Entity\ComposterContact;
 
 class ComposterContactListener
 {
-    /**
-     * @var Mailjet
-     */
     private Mailjet $email;
 
     public function __construct(Mailjet $email)
@@ -19,7 +16,6 @@ class ComposterContactListener
     }
 
     /**
-     * @param ComposterContact $composterContact
      * @throws ApiException
      */
     public function prePersist(ComposterContact $composterContact): void
@@ -39,7 +35,7 @@ class ComposterContactListener
 
                 $recipients[] = [
                     'email' => $user->getEmail(),
-                    'name' => $user->getUsername()
+                    'name' => $user->getUsername(),
                 ];
 
                 $firstReferent = $user;
@@ -51,7 +47,7 @@ class ComposterContactListener
         if ($notify_mc && isset($mc)) {
             $recipients[] = [
                 'email' => $mc->getEmail(),
-                'name' => $mc->getUsername()
+                'name' => $mc->getUsername(),
             ];
         }
 
@@ -59,32 +55,31 @@ class ComposterContactListener
 
         // Envoie du message à tous les destinataires
         $messages[] = [
-            'replyTo'       => ['Email' => $composterContact->getEmail()],
-            'to'            => $recipients,
-            'subject'       => "[Pom-e] Demande de contact pour le composteur $name",
-            'templateId'    => (int) getenv('MJ_CONTACT_FORM_TEMPLATE_ID'),
-            'params'     => [
-                'email'     => $composterContact->getEmail(),
-                'message'   => $composterContact->getMessage()
-            ]
+            'replyTo' => ['Email' => $composterContact->getEmail()],
+            'to' => $recipients,
+            'subject' => "[Pom-e] Demande de contact pour le composteur $name",
+            'templateId' => (int) getenv('MJ_CONTACT_FORM_TEMPLATE_ID'),
+            'params' => [
+                'email' => $composterContact->getEmail(),
+                'message' => $composterContact->getMessage(),
+            ],
         ];
 
         // Envoie d'une confirmation de message à l'expéditeur
         $confirmation = [
-            'to'            => [['email' => $composterContact->getEmail()]],
-            'subject'       => '[Pom-e] Demande de contact bien envoyé',
-            'templateId'    => (int) getenv('MJ_CONTACT_FORM_USER_CONFIRMED_TEMPLATE_ID'),
+            'to' => [['email' => $composterContact->getEmail()]],
+            'subject' => '[Pom-e] Demande de contact bien envoyé',
+            'templateId' => (int) getenv('MJ_CONTACT_FORM_USER_CONFIRMED_TEMPLATE_ID'),
         ];
 
         // On rajoute un référent pour le "ReplyTo"
         if ($firstReferent) {
             $confirmation['replyTo'] = [
                 'email' => $firstReferent->getEmail(),
-                'name'  => $firstReferent->getUsername()
+                'name' => $firstReferent->getUsername(),
             ];
         }
         $messages[] = $confirmation;
-
 
         $response = $this->email->send($messages);
         $composterContact->setSentByMailjet($response);

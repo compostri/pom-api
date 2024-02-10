@@ -10,25 +10,23 @@ use App\Entity\Categorie;
 use App\Entity\Commune;
 use App\Entity\Composter;
 use App\Entity\Contact;
-use App\Entity\Financeur;
-use App\Entity\LivraisonBroyat;
 use App\Entity\Equipement;
+use App\Entity\Financeur;
 use App\Entity\Pole;
 use App\Entity\Quartier;
 use App\Entity\Reparation;
 use App\Entity\Suivi;
 use App\Entity\User;
 use App\Entity\UserComposter;
-use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Box\Spout\Common\Entity\Cell;
+use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use PhpParser\Node\Scalar\String_;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
 
 class ImportComposter extends Command
 {
@@ -62,7 +60,6 @@ class ImportComposter extends Command
 
         $filePath = $input->getArgument('filePath');
 
-
         $reader = ReaderEntityFactory::createODSReader();
 
         $reader->open($filePath);
@@ -70,7 +67,6 @@ class ImportComposter extends Command
         foreach ($reader->getSheetIterator() as $key => $sheet) {
             if (1 === $key) {
                 foreach ($sheet->getRowIterator() as $rkey => $row) {
-
                     // Les trois premières lignes du doc sont des entête
 //                    if ($rkey > 3) {
 //
@@ -84,13 +80,12 @@ class ImportComposter extends Command
                 }
             } elseif (2 === $key) {
                 foreach ($sheet->getRowIterator() as $rkey => $row) {
-
                     // Les deux premières lignes du doc sont des entête
                     if ($rkey > 3) {
                         $cells = $row->getCells();
                         $this->importOnglet2($cells);
                         $this->em->flush();
-                        $composterCount++;
+                        ++$composterCount;
                     }
                 }
             } elseif (3 === $key) {
@@ -113,6 +108,7 @@ class ImportComposter extends Command
 
     /**
      * @param $cells
+     *
      * @throws Exception
      */
     private function importOnglet5($cells): void
@@ -122,14 +118,13 @@ class ImportComposter extends Command
         $communeRepository = $this->em->getRepository(Commune::class);
         $catRepository = $this->em->getRepository(Categorie::class);
 
-
         $name = $cells[1]->getValue();
         if (empty($name) || 'NOM DU SITE' === $name) {
             return;
         }
 
-        $composter = $composterRepository->findOneBy([ 'name' => $name ]);
-        if (! $composter) {
+        $composter = $composterRepository->findOneBy(['name' => $name]);
+        if (!$composter) {
             $this->output->writeln("Pas trouvé le composter '{$name}'");
             $composter = new Composter();
             $composter->setName($name);
@@ -166,8 +161,8 @@ class ImportComposter extends Command
 
         // Equipement
         $volumeName = $cells[2]->getValue();
-        $pavillonsVolume = $pavillonsRepository->findOneBy([ 'volume' => $volumeName]);
-        if (! $pavillonsVolume) {
+        $pavillonsVolume = $pavillonsRepository->findOneBy(['volume' => $volumeName]);
+        if (!$pavillonsVolume) {
             $pavillonsVolume = new Equipement();
             $pavillonsVolume->setVolume($volumeName);
             $this->em->persist($pavillonsVolume);
@@ -179,8 +174,8 @@ class ImportComposter extends Command
         // Commune
         $communeName = $cells[3]->getValue();
 
-        $commune = $communeRepository->findOneBy([ 'name' => $communeName ]);
-        if (! $commune) {
+        $commune = $communeRepository->findOneBy(['name' => $communeName]);
+        if (!$commune) {
             $commune = new Commune();
             $commune->setName($communeName);
             $this->em->persist($commune);
@@ -207,15 +202,14 @@ class ImportComposter extends Command
         $this->em->persist($composter);
     }
 
-
     /**
      * @param $cells
+     *
      * @throws Exception
      */
     private function importOnglet4($cells): void
     {
         $catRepository = $this->em->getRepository(Categorie::class);
-
 
         $name = $cells[1]->getValue();
         if (empty($name)) {
@@ -224,9 +218,8 @@ class ImportComposter extends Command
 
         $composter = $this->getComposterByName($name);
 
-
         // Status
-        $status = $cells[0]->getValue() === 'En dormance' ? StatusEnumType::DORMANT : StatusEnumType::IN_PROJECT;
+        $status = 'En dormance' === $cells[0]->getValue() ? StatusEnumType::DORMANT : StatusEnumType::IN_PROJECT;
         $composter->setStatus($status);
 
         // Addresse
@@ -238,7 +231,7 @@ class ImportComposter extends Command
 
         // Quartier
         $quartierName = $cells[4]->getValue();
-        if (! empty($quartierName)) {
+        if (!empty($quartierName)) {
             $quartier = $this->getQuartierByName($quartierName);
             $composter->setQuartier($quartier);
         }
@@ -263,6 +256,7 @@ class ImportComposter extends Command
 
     /**
      * @param $cells
+     *
      * @throws Exception
      */
     private function importOnglet3($cells): void
@@ -271,7 +265,7 @@ class ImportComposter extends Command
 
         $name = $cells[1]->getValue();
         // Les noms modifier
-        if ($name === 'Barbonnerie') {
+        if ('Barbonnerie' === $name) {
             $name = 'Barbonnerie 2';
         } elseif ('Place Emile Fritsch') {
             $name = 'Saint Pasquier';
@@ -288,35 +282,34 @@ class ImportComposter extends Command
         } elseif ('St Pasquier – Émile Fritsh') {
             $name = 'Saint Pasquier';
         }
-        $composter = $composterRepository->findOneBy([ 'name' => $name ]);
-        if (! $composter) {
+        $composter = $composterRepository->findOneBy(['name' => $name]);
+        if (!$composter) {
             $this->output->writeln("Pas trouvé le composter '{$name}'");
         } else {
             $reparation = new Reparation();
 
             $date = $this->getDateStringFromFile($cells[0]);
-            if (! $date) {
+            if (!$date) {
                 $date = $cells[8]->isEmpty() ? new DateTime('2019-06-26') : new DateTime('2018/06/26');
             }
-            $reparationDescription = ! $cells[8]->isEmpty() ? $cells[8]->getValue() : $cells[11]->getValue();
-            $refFacture = ! $cells[9]->isEmpty() ? $cells[9]->getValue() : $cells[12]->getValue();
-            $montant = ! $cells[10]->isEmpty() ? $cells[10]->getValue() : $cells[13]->getValue();
-            $montant = (float)str_replace(',', '.', $montant);
+            $reparationDescription = !$cells[8]->isEmpty() ? $cells[8]->getValue() : $cells[11]->getValue();
+            $refFacture = !$cells[9]->isEmpty() ? $cells[9]->getValue() : $cells[12]->getValue();
+            $montant = !$cells[10]->isEmpty() ? $cells[10]->getValue() : $cells[13]->getValue();
+            $montant = (float) str_replace(',', '.', $montant);
 
             $nature = null;
-            if (! $cells[5]->isEmpty()) {
+            if (!$cells[5]->isEmpty()) {
                 $nature = 'Dégradation usuelle';
-            } elseif (! $cells[6]->isEmpty()) {
+            } elseif (!$cells[6]->isEmpty()) {
                 $nature = 'Dégradation vandalisme';
-            } elseif (! $cells[7]->isEmpty()) {
+            } elseif (!$cells[7]->isEmpty()) {
                 $nature = 'Aménagement';
             }
-
 
             $reparation->setDate($date);
             $reparation->setDescription($reparationDescription);
             $reparation->setRefFacture($refFacture);
-            $reparation->setMontant($montant !== 0 ? $montant : null);
+            $reparation->setMontant(0 !== $montant ? $montant : null);
             $reparation->setDone(true);
             $reparation->setComposter($composter);
             $reparation->setNature($nature);
@@ -325,22 +318,22 @@ class ImportComposter extends Command
         }
     }
 
-
     /**
      * @param Cell[] $cells
+     *
      * @throws Exception
      */
     private function importOnglet2(array $cells): void
     {
-        $composterRepository                    = $this->em->getRepository(Composter::class);
-        $approvisionnementBroyatRepository      = $this->em->getRepository(ApprovisionnementBroyat::class);
+        $composterRepository = $this->em->getRepository(Composter::class);
+        $approvisionnementBroyatRepository = $this->em->getRepository(ApprovisionnementBroyat::class);
 
         $serialNumber = $cells[0]->getValue();
         $name = $cells[1]->getValue();
         $name = str_replace('’', '\'', $name);
-        $composter = $composterRepository->findOneBy(['serialNumber' => $serialNumber ]);
+        $composter = $composterRepository->findOneBy(['serialNumber' => $serialNumber]);
 
-        if (! $composter) {
+        if (!$composter) {
             // Au cas ou on essaie de retrouver le composteur par son nom
             $composter = $this->getComposterByName($name);
             $composter->setSerialNumber($serialNumber);
@@ -355,8 +348,8 @@ class ImportComposter extends Command
 
         // Fréquentation / Capacité
         $nbFoyersPotentiels = $cells['26']->getValue();
-        $nbInscrit          = $cells['27']->getValue();
-        $nbDeposant         = $cells['28']->getValue();
+        $nbInscrit = $cells['27']->getValue();
+        $nbDeposant = $cells['28']->getValue();
         if (is_numeric($nbFoyersPotentiels)) {
             $composter->setNbFoyersPotentiels((int) $nbFoyersPotentiels);
         }
@@ -393,7 +386,6 @@ class ImportComposter extends Command
 //
 //            $this->em->persist( $suivi );
 //        }
-
 
 //        // approvisionnement Broyat
 //        $appBroyatName = false;
@@ -440,27 +432,27 @@ class ImportComposter extends Command
     }
 
     /**
-     * Import des composteurs
+     * Import des composteurs.
      *
      * @param $cells
+     *
      * @throws Exception
      */
     private function importOnglet1($cells): void
     {
-        $composterRepository    = $this->em->getRepository(Composter::class);
-        $categorieRepository    = $this->em->getRepository(Categorie::class);
-        $poleRepository         = $this->em->getRepository(Pole::class);
-        $userRepository         = $this->em->getRepository(User::class);
-        $financeurRepository         = $this->em->getRepository(Financeur::class);
-
+        $composterRepository = $this->em->getRepository(Composter::class);
+        $categorieRepository = $this->em->getRepository(Categorie::class);
+        $poleRepository = $this->em->getRepository(Pole::class);
+        $userRepository = $this->em->getRepository(User::class);
+        $financeurRepository = $this->em->getRepository(Financeur::class);
 
         // On crée ou récupére un composter par serialNumber ou name
         $serialNumber = $cells[2]->getValue();
         $name = $cells[3]->getValue();
         $name = str_replace('’', '\'', $name);
-        $composter = $composterRepository->findOneBy(['serialNumber' => $serialNumber ]);
+        $composter = $composterRepository->findOneBy(['serialNumber' => $serialNumber]);
 
-        if (! $composter) {
+        if (!$composter) {
             // Au cas ou on essaie de retrouver le composteur par son nom
             $composter = $this->getComposterByName($name);
             $composter->setSerialNumber($serialNumber);
@@ -470,22 +462,22 @@ class ImportComposter extends Command
         $financeurInitiales = $cells[0]->getValue();
 
         if (empty($financeurInitiales) || strlen($financeurInitiales) > 5) {
-            if ($financeurInitiales === 'Supprimé') {
+            if ('Supprimé' === $financeurInitiales) {
                 $composter->setStatus(StatusEnumType::DELETE);
-            } elseif ($financeurInitiales === 'Remplacé') {
+            } elseif ('Remplacé' === $financeurInitiales) {
                 $composter->setStatus(StatusEnumType::MOVED);
-            } elseif (strpos($financeurInitiales, 'Supprimé/Déplacé') === 0) {
+            } elseif (0 === strpos($financeurInitiales, 'Supprimé/Déplacé')) {
                 $composter->setStatus(StatusEnumType::MOVED);
-            } elseif ($financeurInitiales === 'Déplacé à Babhoneur') {
+            } elseif ('Déplacé à Babhoneur' === $financeurInitiales) {
                 $composter->setStatus(StatusEnumType::MOVED);
             } else {
                 $this->output->writeln("Financeur pas compatible : {$financeurInitiales}");
             }
         } else {
             $composter->setStatus(StatusEnumType::ACTIVE);
-            $financeur = $financeurRepository->findOneBy(['initials' => $financeurInitiales ]);
+            $financeur = $financeurRepository->findOneBy(['initials' => $financeurInitiales]);
 
-            if (! $financeur) {
+            if (!$financeur) {
                 switch ($financeurInitiales) {
                     case 'NM':
                         $financeurName = 'Nantes Métropole';
@@ -506,7 +498,6 @@ class ImportComposter extends Command
                         $financeurName = $financeurInitiales;
                 }
 
-
                 $financeur = new Financeur();
                 $financeur->setInitials($financeurInitiales);
                 $financeur->setName($financeurName);
@@ -518,7 +509,7 @@ class ImportComposter extends Command
         }
 
         // date d'installation
-        if (! $cells[1]->isEmpty()) {
+        if (!$cells[1]->isEmpty()) {
             $composter->setDateMiseEnRoute(new DateTime("{$cells[1]->getValue()}-06-26"));
         }
 
@@ -534,13 +525,13 @@ class ImportComposter extends Command
         // Pole
         $poleName = trim($cells[6]->getValue());
 
-        if ($poleName !== '') {
-            if ($poleName === 'LSV' || strpos($poleName, 'ignoble')) {
-                $poleName =  'Loire, Sèvre et Vignoble';
+        if ('' !== $poleName) {
+            if ('LSV' === $poleName || strpos($poleName, 'ignoble')) {
+                $poleName = 'Loire, Sèvre et Vignoble';
             }
-            $pole = $poleRepository->findOneBy([ 'name' => $poleName ]);
+            $pole = $poleRepository->findOneBy(['name' => $poleName]);
 
-            if (! $pole) {
+            if (!$pole) {
                 $pole = new Pole();
                 $pole->setName($poleName);
                 $this->em->persist($pole);
@@ -564,13 +555,13 @@ class ImportComposter extends Command
 
         // MC
         $mcName = $cells[17]->getValue();
-        if ($mcName !== '') {
-            $mc = $userRepository->findOneBy([ 'username' => $mcName ]);
+        if ('' !== $mcName) {
+            $mc = $userRepository->findOneBy(['username' => $mcName]);
 
-            if (! $mc) {
+            if (!$mc) {
                 $mc = new User();
                 $mc->setUsername($mcName);
-                $mc->setEmail(mb_strtolower($mcName) . '@compostri.fr');
+                $mc->setEmail(mb_strtolower($mcName).'@compostri.fr');
                 $mc->setPlainPassword($mcName);
                 $mc->setEnabled(true);
                 $mc->setRoles(['ROLE_ADMIN']);
@@ -588,12 +579,11 @@ class ImportComposter extends Command
         $hasCommat = strpos($latlong, ',');
         $latlong = explode($hasCommat ? ',' : ' ', $latlong);
 
-
-        if (count($latlong) === 2 && is_numeric($latlong[0]) && is_numeric($latlong[1])) {
+        if (2 === count($latlong) && is_numeric($latlong[0]) && is_numeric($latlong[1])) {
             $composter->setLat((float) $latlong[0]);
             $composter->setLng((float) $latlong[1]);
         } elseif (count($latlong) > 1) {
-            $this->output->writeln("Erreur lors de l‘import de latLong ( composteur #{$name}): " . print_r($latlong, true));
+            $this->output->writeln("Erreur lors de l‘import de latLong ( composteur #{$name}): ".print_r($latlong, true));
         }
 
         // Catégorie
@@ -601,13 +591,13 @@ class ImportComposter extends Command
         // 12 Quartier
         // 13 Jardins
         // 14 Ecole
-        if (! empty($cells[11]->getValue())) {
+        if (!empty($cells[11]->getValue())) {
             $composter->setCategorie($categorieRepository->find(2));
-        } elseif (! empty($cells[12]->getValue())) {
+        } elseif (!empty($cells[12]->getValue())) {
             $composter->setCategorie($categorieRepository->find(1));
-        } elseif (! empty($cells[13]->getValue())) {
+        } elseif (!empty($cells[13]->getValue())) {
             $composter->setCategorie($categorieRepository->find(4));
-        } elseif (! empty($cells[14]->getValue())) {
+        } elseif (!empty($cells[14]->getValue())) {
             $composter->setCategorie($categorieRepository->find(3));
         }
 
@@ -622,14 +612,14 @@ class ImportComposter extends Command
         $rMail = explode(' ', $rMail);
         $rMail = $rMail[0];
 
-        if (! empty($rName) || ! empty($rMail)) {
-            if (empty($rMail) || ! filter_var($rMail, FILTER_VALIDATE_EMAIL)) {
-                $rMail = strtolower($rName) . '@tobechange.com';
+        if (!empty($rName) || !empty($rMail)) {
+            if (empty($rMail) || !filter_var($rMail, FILTER_VALIDATE_EMAIL)) {
+                $rMail = strtolower($rName).'@tobechange.com';
             }
 
             $newReferent = false;
-            $referent = $userRepository->findOneBy([ 'email'  => $rMail ]);
-            if (! $referent) {
+            $referent = $userRepository->findOneBy(['email' => $rMail]);
+            if (!$referent) {
                 $referent = new User();
                 $referent->setEmail($rMail);
                 $newReferent = true;
@@ -667,8 +657,7 @@ class ImportComposter extends Command
         $syndicMail = trim($cells[29]->getValue());
         $syndicRole = trim($cells[30]->getValue());
 
-
-        if (! empty($syndicMail)) {
+        if (!empty($syndicMail)) {
             $contact = $this->getContactByEmail($syndicMail);
 
             if ($contact) {
@@ -689,7 +678,7 @@ class ImportComposter extends Command
         $institutionMail = trim($cells[34]->getValue());
         $institutionRole = trim($cells[35]->getValue());
 
-        if (! empty($institutionMail)) {
+        if (!empty($institutionMail)) {
             $contact = $this->getContactByEmail($institutionMail);
 
             if ($contact) {
@@ -704,14 +693,13 @@ class ImportComposter extends Command
             }
         }
 
-
         $scolaireLastname = trim($cells[36]->getValue());
         $scolaireFirstname = trim($cells[37]->getValue());
         $scolairePhone = trim($cells[38]->getValue());
         $scolaireMail = trim($cells[39]->getValue());
         $scolaireRole = trim($cells[40]->getValue());
 
-        if (! empty($scolaireMail)) {
+        if (!empty($scolaireMail)) {
             $contact = $this->getContactByEmail($institutionMail);
 
             if ($contact) {
@@ -726,16 +714,11 @@ class ImportComposter extends Command
             }
         }
 
-
-
         // Persist
         $this->em->persist($composter);
     }
 
-
     /**
-     * @param Cell $date
-     * @return DateTime|null
      * @throws Exception
      */
     private function getDateStringFromFile(Cell $date): ?DateTime
@@ -762,16 +745,12 @@ class ImportComposter extends Command
         return $dateFormated;
     }
 
-    /**
-     * @param String $name
-     * @return Composter
-     */
-    private function getComposterByName(String $name): Composter
+    private function getComposterByName(string $name): Composter
     {
         $composterRepository = $this->em->getRepository(Composter::class);
 
-        $composter = $composterRepository->findOneBy([ 'name' => $name ]);
-        if (! $composter) {
+        $composter = $composterRepository->findOneBy(['name' => $name]);
+        if (!$composter) {
             $composter = new Composter();
             $composter->setName($name);
             $composter->setAddress('');
@@ -781,8 +760,7 @@ class ImportComposter extends Command
         return $composter;
     }
 
-
-    private function getCommuneByName(String $name): ?Commune
+    private function getCommuneByName(string $name): ?Commune
     {
         if (empty($name)) {
             return null;
@@ -790,8 +768,8 @@ class ImportComposter extends Command
 
         $communeRepository = $this->em->getRepository(Commune::class);
 
-        $commune = $communeRepository->findOneBy([ 'name' => $name ]);
-        if (! $commune) {
+        $commune = $communeRepository->findOneBy(['name' => $name]);
+        if (!$commune) {
             $commune = new Commune();
             $commune->setName($name);
             $this->em->persist($commune);
@@ -802,41 +780,39 @@ class ImportComposter extends Command
         return $commune;
     }
 
-
     /**
-     * @param String $quartierName
      * @return Quartier
      */
-    private function getQuartierByName(String $quartierName): ?Quartier
+    private function getQuartierByName(string $quartierName): ?Quartier
     {
         if (empty($quartierName)) {
             return null;
         }
 
-        $quartierRepository     = $this->em->getRepository(Quartier::class);
+        $quartierRepository = $this->em->getRepository(Quartier::class);
 
-        if ($quartierName === 'Ile de Nantes' || $quartierName === 'Nantes Ile de Nantes') {
-            $quartierName =  'Nantes Île-de-Nantes';
-        } elseif ($quartierName === 'Dervallières Zola') {
-            $quartierName =  'Nantes Dervallières-Zola';
-        } elseif ($quartierName === 'Nantes Malakoff – Saint-Donatien') {
-            $quartierName =  'Nantes Malakoff - Saint-Donatien';
-        } elseif ($quartierName === 'Breil Barberie') {
-            $quartierName =  'Nantes Breil-Barberie';
+        if ('Ile de Nantes' === $quartierName || 'Nantes Ile de Nantes' === $quartierName) {
+            $quartierName = 'Nantes Île-de-Nantes';
+        } elseif ('Dervallières Zola' === $quartierName) {
+            $quartierName = 'Nantes Dervallières-Zola';
+        } elseif ('Nantes Malakoff – Saint-Donatien' === $quartierName) {
+            $quartierName = 'Nantes Malakoff - Saint-Donatien';
+        } elseif ('Breil Barberie' === $quartierName) {
+            $quartierName = 'Nantes Breil-Barberie';
         }
 
-        $quartier = $quartierRepository->findOneBy([ 'name' => $quartierName ]);
+        $quartier = $quartierRepository->findOneBy(['name' => $quartierName]);
 
-        if (! $quartier) {
+        if (!$quartier) {
             $quartier = new Quartier();
             $quartier->setName($quartierName);
             $this->em->persist($quartier);
             $this->em->flush();
             $this->output->writeln("Quartier créé : {$quartier->getName()}");
         }
+
         return $quartier;
     }
-
 
     private function getEquipement(string $type, string $capacite): ?Equipement
     {
@@ -846,9 +822,9 @@ class ImportComposter extends Command
 
         $equipementRepository = $this->em->getRepository(Equipement::class);
 
-        $equipement = $equipementRepository->findOneBy([ 'type' => $type, 'capacite' => $capacite ]);
+        $equipement = $equipementRepository->findOneBy(['type' => $type, 'capacite' => $capacite]);
 
-        if (! $equipement) {
+        if (!$equipement) {
             $equipement = new Equipement();
             $equipement->setType($type);
             $equipement->setCapacite($capacite);
@@ -860,21 +836,16 @@ class ImportComposter extends Command
         return $equipement;
     }
 
-
-    /**
-     * @param string $email
-     * @return Contact|null
-     */
     private function getContactByEmail(string $email): ?Contact
     {
-        if (empty($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return null;
         }
 
         $contactRepository = $this->em->getRepository(Contact::class);
-        $contact = $contactRepository->findOneBy(['email' => $email ]);
+        $contact = $contactRepository->findOneBy(['email' => $email]);
 
-        if (! $contact) {
+        if (!$contact) {
             $contact = new Contact();
             $contact->setEmail($email);
         }

@@ -15,9 +15,6 @@ class LivraisonBroyatListener
         $this->em = $entityManager;
     }
 
-    /**
-     * @param LivraisonBroyat $livraison
-     */
     public function postPersist(LivraisonBroyat $livraison): void
     {
         $composter = $livraison->getComposter();

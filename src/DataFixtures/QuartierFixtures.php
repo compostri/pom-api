@@ -36,7 +36,7 @@ class QuartierFixtures extends Fixture
             $entity->setName($quartier);
             $manager->persist($entity);
 
-            $this->addReference('quartier_' . $i, $entity);
+            $this->addReference('quartier_'.$i, $entity);
         }
 
         $manager->flush();

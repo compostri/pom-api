@@ -20,7 +20,7 @@ final class Version20191217164440 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE composter ADD financeur_suivi_id INT DEFAULT NULL');
         $this->addSql('ALTER TABLE composter ADD CONSTRAINT FK_FCFE9BACF09D5957 FOREIGN KEY (financeur_suivi_id) REFERENCES financeur (id)');
@@ -30,7 +30,7 @@ final class Version20191217164440 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE composter DROP FOREIGN KEY FK_FCFE9BACF09D5957');
         $this->addSql('DROP INDEX IDX_FCFE9BACF09D5957 ON composter');

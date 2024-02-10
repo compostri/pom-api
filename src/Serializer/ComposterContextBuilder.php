@@ -2,10 +2,10 @@
 
 namespace App\Serializer;
 
+use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use App\Entity\Composter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 
 class ComposterContextBuilder implements SerializerContextBuilderInterface
 {
@@ -23,7 +23,7 @@ class ComposterContextBuilder implements SerializerContextBuilderInterface
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
         $resourceClass = $context['resource_class'] ?? null;
 
-        if ($resourceClass === Composter::class &&
+        if (Composter::class === $resourceClass &&
             isset($context['groups']) &&
             $this->authorizationChecker->isGranted('ROLE_ADMIN')) {
             $context['groups'][] = 'composter:admin';

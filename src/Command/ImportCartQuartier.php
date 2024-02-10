@@ -49,17 +49,17 @@ class ImportCartQuartier extends Command
         foreach ($reader->getSheetIterator() as $key => $sheet) {
             foreach ($sheet->getRowIterator() as $rkey => $row) {
                 if ($rkey > 1) {
-                    $lines++;
+                    ++$lines;
 
                     // do stuff with the row
                     $cells = $row->getCells();
                     $composter = false;
 
-                    if (! $cells[10]->isEmpty()) {
+                    if (!$cells[10]->isEmpty()) {
                         $composterSerialNumber = (int) $cells[10]->getValue();
 
                         $serailNumberRef = [
-                            23  => 243,
+                            23 => 243,
                             105 => 97,
                             130 => 120,
                             185 => 186,
@@ -87,11 +87,11 @@ class ImportCartQuartier extends Command
                         ];
 
                         if (array_key_exists($composterSerialNumber, $serailNumberRef)) {
-                            $composterSerialNumber = $serailNumberRef[ $composterSerialNumber ];
+                            $composterSerialNumber = $serailNumberRef[$composterSerialNumber];
                         }
 
-                        $composter = $composterRepository->findOneBy([ 'serialNumber' => $composterSerialNumber ]);
-                    } elseif (! $cells[1]->isEmpty()) {
+                        $composter = $composterRepository->findOneBy(['serialNumber' => $composterSerialNumber]);
+                    } elseif (!$cells[1]->isEmpty()) {
                         $name = str_replace('Composteur ', '', $cells[1]->getValue());
                         switch ($name) {
                             case 'Place de village Espace du Fort':
@@ -107,16 +107,16 @@ class ImportCartQuartier extends Command
                                 $name = 'Val de Cens';
                                 break;
                         }
-                        $composter = $composterRepository->findOneBy([ 'name' => $name ]);
+                        $composter = $composterRepository->findOneBy(['name' => $name]);
                     }
 
-                    if (! $composter instanceof  Composter) {
+                    if (!$composter instanceof Composter) {
                         $output->writeln("{$cells[1]->getValue()} : pas trouvé");
                     } else {
                         $composter->setPublicDescription($cells[2]->getValue());
                         $composter->setPermanencesDescription($cells[8]->getValue());
                         $this->em->persist($composter);
-                        $composterCount++;
+                        ++$composterCount;
                     }
                 }
             }

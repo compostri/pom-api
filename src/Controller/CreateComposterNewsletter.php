@@ -18,12 +18,11 @@ class CreateComposterNewsletter extends AbstractController
 
     public function __invoke(ComposterNewsletter $data): ComposterNewsletter
     {
-
         // On récupérer le contactListe ID du composteur
         $composter = $data->getComposter();
         $contactsListID = $composter->getMailjetListID();
 
-        if (! $contactsListID) {
+        if (!$contactsListID) {
             $composter = $this->maijet->createComposterContactList($composter);
             $contactsListID = $composter->getMailjetListID();
 
@@ -35,7 +34,6 @@ class CreateComposterNewsletter extends AbstractController
         }
 
         if ($contactsListID) {
-
             // On envoie la newsletter avec la bonne liste avec le contenu recut
             $campaignId = $this->maijet->sendCampaign($contactsListID, $data->getSubject(), $data->getMessage(), $composter);
 

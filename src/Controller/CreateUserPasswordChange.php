@@ -12,11 +12,11 @@ class CreateUserPasswordChange extends AbstractController
     public function __invoke(UserPasswordChange $data): UserPasswordChange
     {
         $em = $this->getDoctrine()->getManager();
-        $user =  $this->getDoctrine()
+        $user = $this->getDoctrine()
             ->getRepository(User::class)
-            ->findOneBy([ 'resetToken' => $data->getToken() ]);
+            ->findOneBy(['resetToken' => $data->getToken()]);
 
-        if (! $user) {
+        if (!$user) {
             throw new BadRequestHttpException('Aucun utilisateur trouvé');
         }
 
@@ -29,6 +29,7 @@ class CreateUserPasswordChange extends AbstractController
         $data->setId($user->getId());
         $data->setToken('');
         $data->setNewPassword('');
+
         return $data;
     }
 }

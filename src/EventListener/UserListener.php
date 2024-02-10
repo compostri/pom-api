@@ -17,34 +17,26 @@ class UserListener
     protected $tokenGenerator;
     protected $email;
 
-
     /**
      * UserListener constructor.
-     * @param UserPasswordEncoderInterface $encoder
-     * @param EntityManagerInterface $entityManager
-     * @param TokenGeneratorInterface $tokenGenerator
-     * @param Mailjet $email
      */
     public function __construct(UserPasswordEncoderInterface $encoder, EntityManagerInterface $entityManager, TokenGeneratorInterface $tokenGenerator, Mailjet $email)
     {
-        $this->encoder          = $encoder;
-        $this->em               = $entityManager;
-        $this->tokenGenerator   = $tokenGenerator;
-        $this->email            = $email;
+        $this->encoder = $encoder;
+        $this->em = $entityManager;
+        $this->tokenGenerator = $tokenGenerator;
+        $this->email = $email;
     }
 
-    /**
-     * @param User $user
-     */
     public function prePersist(User $user): void
     {
         $this->email->addUser($user);
 
-        /**
+        /*
          * Pour les utilisateur nouvellement créer qui sont en enabled = false :
          *  1. On crée un token
          */
-        if (! $user->getEnabled() && $user->getUserConfirmedAccountURL()) {
+        if (!$user->getEnabled() && $user->getUserConfirmedAccountURL()) {
             $resetToken = $this->tokenGenerator->generateToken();
             $user->setResetToken($resetToken);
         }
@@ -52,14 +44,12 @@ class UserListener
         $this->encodePassword($user);
     }
 
-
     /**
-     * @param User $user
      * @throws \Exception
      */
     public function preUpdate(User $user): void
     {
-        if ($user->getOldPassword() && ! $this->encoder->isPasswordValid($user, $user->getOldPassword())) {
+        if ($user->getOldPassword() && !$this->encoder->isPasswordValid($user, $user->getOldPassword())) {
             throw new BadRequestHttpException('L’ancien mot de passe n’est pas le bon');
         }
 
@@ -71,10 +61,8 @@ class UserListener
         $this->em->getUnitOfWork()->recomputeSingleEntityChangeSet($meta, $user);
     }
 
-
     public function postUpdate(User $user, LifecycleEventArgs $eventArgs)
     {
-
         // Si on change l'abonnement a la newsletter on envoie l'information a MailJet
         $changeSet = $eventArgs->getEntityManager()->getUnitOfWork()->getEntityChangeSet($user);
         if (isset($changeSet['isSubscribeToCompostriNewsletter'])) {
@@ -90,9 +78,6 @@ class UserListener
         }
     }
 
-    /**
-     * @param User $user
-     */
     private function encodePassword(User $user): void
     {
         if (!$user->getPlainPassword()) {

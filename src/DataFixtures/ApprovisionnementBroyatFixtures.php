@@ -24,7 +24,7 @@ class ApprovisionnementBroyatFixtures extends Fixture
             $entity->setName($appro);
             $manager->persist($entity);
 
-            $this->addReference('approvisionnement_broyat_' . $i, $entity);
+            $this->addReference('approvisionnement_broyat_'.$i, $entity);
         }
 
         $manager->flush();

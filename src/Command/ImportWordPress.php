@@ -53,15 +53,14 @@ class ImportWordPress extends Command
         foreach ($reader->getSheetIterator() as $key => $sheet) {
             foreach ($sheet->getRowIterator() as $rkey => $row) {
                 if ($rkey > 1) {
-                    $lines++;
+                    ++$lines;
 
                     // do stuff with the row
                     $cells = $row->getCells();
 
-                    if (! $cells[0]->isEmpty()) {
-
+                    if (!$cells[0]->isEmpty()) {
                         /**
-                         * CSV Format
+                         * CSV Format.
                          *
                          * 0 "nom";
                          * 1 "categorie";
@@ -78,19 +77,18 @@ class ImportWordPress extends Command
 
                         $composterName = $this->getRealName($cells[0]->getValue());
 
-                        $composter = $composterRepository->findOneBy([ 'name' => $composterName ]);
+                        $composter = $composterRepository->findOneBy(['name' => $composterName]);
 
-
-                        if (! $composter instanceof  Composter) {
+                        if (!$composter instanceof Composter) {
                             $output->writeln("{$composterName} : pas trouvé");
                         } else {
                             $imageUrl = $cells[9]->getValue();
-                            if ($imageUrl !== 'http://www.compostri.fr/wp-includes/images/media/default.png') {
+                            if ('http://www.compostri.fr/wp-includes/images/media/default.png' !== $imageUrl) {
                                 $imageUrl = str_replace('-150x150', '', $imageUrl);
                                 $imageName = explode('/', $imageUrl);
                                 $imageName = end($imageName);
 
-                                $imagePath = $this->parameterBag->get('upload_destination') . $imageName;
+                                $imagePath = $this->parameterBag->get('upload_destination').$imageName;
                                 if ($imageName && !file_exists($imagePath)) {
                                     $output->writeln("import de l‘image {$imageUrl}");
                                     $imageUrl = urlencode($imageUrl);
@@ -114,10 +112,10 @@ class ImportWordPress extends Command
                                     }
                                 }
                             }
-                            $composter->setLat(( float) $cells[7]->getValue());
-                            $composter->setLng(( float) $cells[8]->getValue());
+                            $composter->setLat((float) $cells[7]->getValue());
+                            $composter->setLng((float) $cells[8]->getValue());
                             $this->em->persist($composter);
-                            $composterCount++;
+                            ++$composterCount;
                         }
                     }
                 }
@@ -127,76 +125,68 @@ class ImportWordPress extends Command
         $output->writeln("{$composterCount} composteurs importé sur {$lines} lignes");
     }
 
-
-    /**
-     * @param string $composterName
-     * @return string
-     */
     private function getRealName(string $composterName): string
     {
         $composterName = str_replace(['&rsquo;', '&#8211;'], ['\'', '-'], $composterName);
 
-
         $match = [
             'Multi-Accueil Jules Verne' => 'Mutli Accueil Jules Vernes',
-            'La Crapaudine'         => 'Jardin de la Crapaudine',
-            'Jardins Famibio'       => 'Jardin Famibio',
-            'Ecole La Chauvinière'      => 'Ecole Chauvinière',
-            'Ecole François Dallet'     => 'Ecole François Dallet (primaire)',
-            'GB 357'                => 'GB357',
-            'Chateaubriand Versailles'  => 'Versailles Chateaubriand',
-            'Mail Picasso'          => 'Mail Picasso',
-            'Square Gaston Turpin'  => 'Gaston Turpin ( Grand T)',
+            'La Crapaudine' => 'Jardin de la Crapaudine',
+            'Jardins Famibio' => 'Jardin Famibio',
+            'Ecole La Chauvinière' => 'Ecole Chauvinière',
+            'Ecole François Dallet' => 'Ecole François Dallet (primaire)',
+            'GB 357' => 'GB357',
+            'Chateaubriand Versailles' => 'Versailles Chateaubriand',
+            'Mail Picasso' => 'Mail Picasso',
+            'Square Gaston Turpin' => 'Gaston Turpin ( Grand T)',
             'Place Similien Guérin' => 'Place du marché',
-            'Potager 16 Watt'       => 'Potager 16 Watts',
-            'La Renaudière'         => 'Renaudière',
-            'Ecole Emilienne Leroux'        => 'Ecole Emilienne Leroux (Maternelle )',
-            'Chemin Poisson'        => 'Chemin Poisson / ASL Armor',
-            'Les Lacs'              => 'Résidence Les Lacs',
-            'Les Aqueducs - Aux Carrières de Villeneuve'  => 'Les Aqueducs',
-            'Parc de la Moutonnerie'        => 'Moutonnerie',
-            'Foyer ERDAM - Perrières'   => 'Foyer ERDAM-Perrières',
-            'Jardins du Douet'          => 'Jardin du Douet',
+            'Potager 16 Watt' => 'Potager 16 Watts',
+            'La Renaudière' => 'Renaudière',
+            'Ecole Emilienne Leroux' => 'Ecole Emilienne Leroux (Maternelle )',
+            'Chemin Poisson' => 'Chemin Poisson / ASL Armor',
+            'Les Lacs' => 'Résidence Les Lacs',
+            'Les Aqueducs - Aux Carrières de Villeneuve' => 'Les Aqueducs',
+            'Parc de la Moutonnerie' => 'Moutonnerie',
+            'Foyer ERDAM - Perrières' => 'Foyer ERDAM-Perrières',
+            'Jardins du Douet' => 'Jardin du Douet',
             'Ça pousse en Amont - Prairie d\'Amont' => 'Ça pousse en amont',
-            'Square Jean-Baptiste Terrien'  => 'Square Jean Baptiste Terrien',
-            'Centre Socio-Culturel Allée Verte'     => 'CSC L\'allée verte',
-            'Ecole des Réformes'            => 'École Réformes',
-            'Centre Socio-Culturel Port-au-Blé'     => 'CSC Port au Blé',
-            'Centre Socio-Culturel Soleil Levant'   => 'CSC Soleil Levant',
-            'Les jardins de Gaïa'           => 'Jardin de Gaia',
-            'Compostîle'                    => 'Compost’île',
-            'La Cholière'                   => 'Cholière',
-            'Murillo'                       => 'Murillo/Les Excuriales',
-            'Le Vore\'Koff'                 => 'Vore-Koff',
-            'Ecole Charles Lebourg - Orrion Loquidy'  => 'Ecole Charles Lebourg / Orrion Loquidy',
-            'Jardin des Noëlles'            => 'Jardin des Noelles-Thébaudières',
-            'Jardins du Tillay'             => 'Jardin du Tillay',
-            'Centre Socio-Culturel Henri Normand'           => 'CSC Henri Normand',
-            'Ecole des mines - Résidence étudiante'   => 'Ecole des mines-résidence étudiant',
-            'La Ferrière'                   => 'Cuisine Ecole Ferrière',
-            'Ecole George Sand'             => 'Ecole George Sand Elémentaire',
-            'Ecole Georges Brassens'        => 'Ecole Georges Brassens (maternelle)',
-            'L\'air du compost'             => 'L’air du compost',
-            'L\'Allouée'                    => 'L’Allouée',
-            'Val d\'Erdre'                  => 'Erdre',
-            'Coche d\'eau'                  => 'Coche d’eau',
-            'Les Folies de l\'Erdre'        => 'Folies de l’Erdre',
-            'Compost\'appen'                => 'Compo’Stappen',
-            'Domaine d\'Esté'               => 'Domaine d’Esté',
-            'Les Terrasses de l\'Erdre'     => 'Terrasses de l’Erdre',
-            'Le jardin des Dord\'Oignons'   => 'Moulin Lambert - Le jardin des Dord’Oignons',
-            'La Frat\''                     => 'La Frat’',
-            'Le trait d\'oignon'            => 'Le Trait d’Oignon',
-            'Ingénieurs - La Jonelière'     => 'Ingénieurs – Jonelière',
-            'Venelle Lamour - Les Forges'   => 'Venelles Lamour-Les Forges',
-            'FJT Port-Beaulieu - Jard\'îlien'   => 'FJT Port beaulieu Jardilien 2',
-            'La Closerie de l\'Arche'       => 'La Closerie de l’Arche',
-
+            'Square Jean-Baptiste Terrien' => 'Square Jean Baptiste Terrien',
+            'Centre Socio-Culturel Allée Verte' => 'CSC L\'allée verte',
+            'Ecole des Réformes' => 'École Réformes',
+            'Centre Socio-Culturel Port-au-Blé' => 'CSC Port au Blé',
+            'Centre Socio-Culturel Soleil Levant' => 'CSC Soleil Levant',
+            'Les jardins de Gaïa' => 'Jardin de Gaia',
+            'Compostîle' => 'Compost’île',
+            'La Cholière' => 'Cholière',
+            'Murillo' => 'Murillo/Les Excuriales',
+            'Le Vore\'Koff' => 'Vore-Koff',
+            'Ecole Charles Lebourg - Orrion Loquidy' => 'Ecole Charles Lebourg / Orrion Loquidy',
+            'Jardin des Noëlles' => 'Jardin des Noelles-Thébaudières',
+            'Jardins du Tillay' => 'Jardin du Tillay',
+            'Centre Socio-Culturel Henri Normand' => 'CSC Henri Normand',
+            'Ecole des mines - Résidence étudiante' => 'Ecole des mines-résidence étudiant',
+            'La Ferrière' => 'Cuisine Ecole Ferrière',
+            'Ecole George Sand' => 'Ecole George Sand Elémentaire',
+            'Ecole Georges Brassens' => 'Ecole Georges Brassens (maternelle)',
+            'L\'air du compost' => 'L’air du compost',
+            'L\'Allouée' => 'L’Allouée',
+            'Val d\'Erdre' => 'Erdre',
+            'Coche d\'eau' => 'Coche d’eau',
+            'Les Folies de l\'Erdre' => 'Folies de l’Erdre',
+            'Compost\'appen' => 'Compo’Stappen',
+            'Domaine d\'Esté' => 'Domaine d’Esté',
+            'Les Terrasses de l\'Erdre' => 'Terrasses de l’Erdre',
+            'Le jardin des Dord\'Oignons' => 'Moulin Lambert - Le jardin des Dord’Oignons',
+            'La Frat\'' => 'La Frat’',
+            'Le trait d\'oignon' => 'Le Trait d’Oignon',
+            'Ingénieurs - La Jonelière' => 'Ingénieurs – Jonelière',
+            'Venelle Lamour - Les Forges' => 'Venelles Lamour-Les Forges',
+            'FJT Port-Beaulieu - Jard\'îlien' => 'FJT Port beaulieu Jardilien 2',
+            'La Closerie de l\'Arche' => 'La Closerie de l’Arche',
         ];
 
-
         if (array_key_exists($composterName, $match)) {
-            $composterName = $match[ $composterName];
+            $composterName = $match[$composterName];
         }
 
         //Compostière Communautaire de Ndenkop : pas trouvé

@@ -8,11 +8,11 @@ use App\Entity\Composter;
 use App\Entity\Permanence;
 use App\Entity\User;
 use App\Repository\ComposterRepository;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Doctrine\ORM\EntityManagerInterface;
 
 class ComposterVoter extends Voter
 {
@@ -29,7 +29,6 @@ class ComposterVoter extends Voter
      */
     private $composterRepository;
 
-
     public function __construct(RequestStack $requestStack, EntityManagerInterface $entityManager)
     {
         $this->requestStack = $requestStack;
@@ -41,11 +40,12 @@ class ComposterVoter extends Voter
         $supports = in_array($attribute, [self::OPENER, self::REFERENT], true) &&
             ($subject instanceof Composter || $subject instanceof Permanence);
 
-        if (! $supports) {
+        if (!$supports) {
             // Si $subject est null on est peut être sur une création
             $currentRequest = $this->requestStack->getCurrentRequest();
-            $supports = $subject === null && $currentRequest instanceof Request && $currentRequest->getMethod() === 'POST';
+            $supports = null === $subject && $currentRequest instanceof Request && 'POST' === $currentRequest->getMethod();
         }
+
         return $supports;
     }
 
@@ -69,7 +69,7 @@ class ComposterVoter extends Voter
             $composter = $subject->getComposter();
         } else {
             // On est sur la création d'une entité
-            if ($currentRequest && $currentRequest->getPathInfo() === '/permanences') {
+            if ($currentRequest && '/permanences' === $currentRequest->getPathInfo()) {
                 // On tente de créer une permanence
                 $request_body = json_decode($currentRequest->getContent(), false);
                 $composter_string = $request_body->composter;
@@ -79,12 +79,12 @@ class ComposterVoter extends Voter
             }
         }
 
-        if (! $composter instanceof Composter) {
+        if (!$composter instanceof Composter) {
             return false;
         }
 
         // Les référents on les même droit que les ouvreurs
-        $attribute_array = $attribute === $this::OPENER ? [ $this::OPENER, $this::REFERENT ] : $attribute;
+        $attribute_array = $attribute === $this::OPENER ? [$this::OPENER, $this::REFERENT] : $attribute;
 
         // On vérifie que le user est bien rattaché au composteur
         $current_role = null;
@@ -99,7 +99,7 @@ class ComposterVoter extends Voter
         // Dans le cas d'un ouvreur on vérifie qu'il modifie ou supprime uniquement une permance ou il est inscrit
         if ($grant && $subject instanceof Permanence && $current_role === $this::OPENER) {
             $grant = false;
-            if ($currentRequest && $currentRequest->getMethod() === 'PUT') {
+            if ($currentRequest && 'PUT' === $currentRequest->getMethod()) {
                 // On récupére les ids des ouvreurs de la permanence
                 $openers = $subject->getOpeners();
                 $openers_ids = array_map(static function (User $opener) {
@@ -115,6 +115,7 @@ class ComposterVoter extends Voter
                     $openers_request_ids = array_map(
                         static function (string $opener) {
                             $opener_a = explode('/', $opener);
+
                             return (int) end($opener_a);
                         },
                         $request_openers
@@ -128,9 +129,8 @@ class ComposterVoter extends Voter
                         $diff = array_diff($openers_request_ids, $openers_ids);
                     }
 
-                    $grant = count($diff) === 0 || (count($diff) === 1 && array_shift($diff) === $user->getID());
+                    $grant = 0 === count($diff) || (1 === count($diff) && array_shift($diff) === $user->getID());
                 } else {
-
                     // TODO peut être vérifier ici qu'il ne modifie que les données des stats
                     $grant = true;
                 }

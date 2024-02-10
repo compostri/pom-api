@@ -38,14 +38,13 @@ class ImageResize extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
         // create an image manager instance with favored driver
-        $manager = new ImageManager(array('driver' => 'imagick'));
+        $manager = new ImageManager(['driver' => 'imagick']);
 
         // to finally create image instances
         $upload_destination = $this->parameterBag->get('upload_destination');
         foreach (new DirectoryIterator($upload_destination) as $file) {
-            if ($file->isDot() || $file->getFilename() === '.DS_Store') {
+            if ($file->isDot() || '.DS_Store' === $file->getFilename()) {
                 continue;
             }
 
@@ -53,11 +52,11 @@ class ImageResize extends Command
 
             $output->writeln("On traite l’image {$fileName}");
 
-            $manager->make($upload_destination . $fileName)
+            $manager->make($upload_destination.$fileName)
                 ->widen(942, function ($constraint) {
                     $constraint->upsize();
                 })
-                ->save($upload_destination . $fileName);
+                ->save($upload_destination.$fileName);
         }
     }
 }

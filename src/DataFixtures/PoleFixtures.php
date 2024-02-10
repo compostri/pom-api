@@ -17,7 +17,7 @@ class PoleFixtures extends Fixture
             'Pôle Centralité ex Nantes-Ouest',
             'Erdre et Cens',
             'Sud Ouest',
-            'Erdre et Cens'
+            'Erdre et Cens',
         ];
 
         foreach ($poles as $i => $pole) {
@@ -25,7 +25,7 @@ class PoleFixtures extends Fixture
             $entity->setName($pole);
             $manager->persist($entity);
 
-            $this->addReference('pole_' . $i, $entity);
+            $this->addReference('pole_'.$i, $entity);
         }
 
         $manager->flush();

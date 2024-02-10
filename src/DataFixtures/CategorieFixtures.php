@@ -11,11 +11,11 @@ class CategorieFixtures extends Fixture
     public function load(ObjectManager $manager)
     {
         $cats = [
-           "Quartier",
-           "Privé",
-           "École",
-           "Jardin",
-           "Place de village"
+           'Quartier',
+           'Privé',
+           'École',
+           'Jardin',
+           'Place de village',
         ];
 
         foreach ($cats as $i => $cat) {
@@ -23,7 +23,7 @@ class CategorieFixtures extends Fixture
             $entity->setName($cat);
             $manager->persist($entity);
 
-            $this->addReference('categorie_' . $i, $entity);
+            $this->addReference('categorie_'.$i, $entity);
         }
 
         $manager->flush();

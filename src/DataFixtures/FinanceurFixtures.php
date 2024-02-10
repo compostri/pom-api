@@ -11,9 +11,6 @@ use Faker\Generator;
 
 class FinanceurFixtures extends Fixture
 {
-    /**
-     * @var Generator
-     */
     private Generator $faker;
 
     public function __construct()
@@ -23,7 +20,7 @@ class FinanceurFixtures extends Fixture
 
     public function load(ObjectManager $manager)
     {
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 10; ++$i) {
             // Create 10 maitre composter user
             $financeur = new Financeur();
             $financeur->setName($this->faker->company);
@@ -31,7 +28,7 @@ class FinanceurFixtures extends Fixture
 
             $manager->persist($financeur);
 
-            $this->setReference('financeur_' . $i, $financeur);
+            $this->setReference('financeur_'.$i, $financeur);
         }
 
         $manager->flush();

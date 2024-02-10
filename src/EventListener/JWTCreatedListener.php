@@ -12,18 +12,12 @@ class JWTCreatedListener
      */
     private $requestStack;
 
-
-    /**
-     * @param RequestStack $requestStack
-     */
     public function __construct(RequestStack $requestStack)
     {
         $this->requestStack = $requestStack;
     }
 
     /**
-     * @param JWTCreatedEvent $event
-     *
      * @return void
      */
     public function onJWTCreated(JWTCreatedEvent $event)
@@ -34,9 +28,9 @@ class JWTCreatedListener
 
         foreach ($user->getUserComposters() as $comp) {
             $composters[] = [
-        'slug'        => $comp->getComposter()->getSlug(),
-        'name'        => $comp->getComposter()->getName(),
-        'capability'  => $comp->getCapability()
+        'slug' => $comp->getComposter()->getSlug(),
+        'name' => $comp->getComposter()->getName(),
+        'capability' => $comp->getCapability(),
       ];
         }
         $payload['composters'] = $composters;
