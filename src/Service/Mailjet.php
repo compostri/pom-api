@@ -5,12 +5,14 @@ namespace App\Service;
 use App\Entity\Composter;
 use App\Entity\User;
 use Brevo\Client\Api\ContactsApi;
+use Brevo\Client\Api\EmailCampaignsApi;
 use Brevo\Client\Api\ListsApi;
 use Brevo\Client\Api\TransactionalEmailsApi;
 use Brevo\Client\ApiException;
 use Brevo\Client\Configuration;
 use Brevo\Client\Model\AddContactToList;
 use Brevo\Client\Model\CreateContact;
+use Brevo\Client\Model\CreateEmailCampaign;
 use Brevo\Client\Model\CreateList;
 use Brevo\Client\Model\RemoveContactFromList;
 use Brevo\Client\Model\SendSmtpEmail;
@@ -195,51 +197,49 @@ class Mailjet
         }
     }
 
-    public function getContactContactsLists(int $contactMailjetId)
-    {
-        //return $this->mj->get(Resources::$ContactGetcontactslists, ['id' => $contactMailjetId]);
-    }
-
     /**
-     * @param string $content
+     * @return int|void
      */
-    public function createCampaignDraft(string $listId, string $subject)
+    public function createCampaign(string $listId, string $subject, string $content, Composter $composter)
     {
         $user = $this->security->getUser();
 
         if ($user instanceof User) {
             $body = [
-                'EditMode' => 'mjml',
-                'IsStarred' => 'false',
-                'IsTextPartIncluded' => 'true',
-                'ReplyEmail' => $user->getEmail(),
-                'Title' => $subject,
-                'ContactsListID' => $listId,
-                'Locale' => 'fr_FR',
-                'Sender' => 'Compostri',
-                'SenderEmail' => getenv('MAILJET_FROM_EMAIL'),
-                'SenderName' => getenv('MAILJET_FROM_NAME'),
-                'Subject' => $subject,
+                'name' => $subject,
+                'sender' => [
+                    'name' => getenv('MAILJET_FROM_NAME'),
+                    'email' => getenv('MAILJET_FROM_EMAIL'),
+                ],
+                'htmlContent' => $this->getCampaignHTMLContent($content, $composter),
+                'subject' => $subject,
+                'previewText' => $subject,
+                'replyTo' => $user->getEmail(),
+                'recipients' => ['listIds' => [(int) $listId]],
             ];
-            //return $this->mj->post(Resources::$Campaigndraft, ['body' => $body]);
+
+            $apiInstance = new EmailCampaignsApi(new Client(), $this->mj);
+            $emailCampaigns = new CreateEmailCampaign($body);
+
+            try {
+                $result = $apiInstance->createEmailCampaign($emailCampaigns);
+
+                return $result->getId();
+            } catch (Exception $e) {
+                echo 'Exception when calling EmailCampaignsApi->createEmailCampaign: ', $e->getMessage(), PHP_EOL;
+            }
         }
     }
 
-    public function addCampaignDraftContent(int $campaignId, string $content, Composter $composter)
+    public function getCampaignHTMLContent(string $content, Composter $composter): string
     {
-        $html = $this->mjml->getHtml(
+        return $this->mjml->getHtml(
             str_replace(
                 ['{{message}}', '{{composterURL}}', '{{composterName}}'],
                 [$this->parser->transformMarkdown($content), getenv('FRONT_DOMAIN').'/composteur/'.$composter->getSlug(), $composter->getName()],
                 file_get_contents(__DIR__.'/../../templates/mjml/composteur-newsletter.mjml')
             )
         );
-        $body = [
-            'Html-part' => $html,
-            'Text-part' => $content,
-        ];
-
-        //return $this->mj->post(Resources::$CampaigndraftDetailcontent, ['id' => $campaignId, 'body' => $body]);
     }
 
     /**
@@ -247,23 +247,21 @@ class Mailjet
      */
     public function sendCampaign(string $listId, string $subject, string $content, Composter $composter): ?string
     {
-        // Créer un brouillont : POST 	/campaigndraft
-        $response = $this->createCampaignDraft($listId, $subject);
+        // Créer la campagne
+        $campaignId = $this->createCampaign($listId, $subject, $content, $composter);
 
-        if ($response->success()) {
-            $draftData = $response->getData();
-            $campaignDraftId = $draftData[0]['ID'];
+        if ($campaignId && 'prod' === $this->env) {
+            // Et l'envoyer
+            $apiInstance = new EmailCampaignsApi(new Client(), $this->mj);
 
-            // Ajouter du contenu : POST /campaigndraft/{draft_ID}/detailcontent
-            $response = $this->addCampaignDraftContent($campaignDraftId, $content, $composter);
-
-            if ($response->success() && 'prod' === $this->env) {
-                // Et enfin l'envoyer : POST /campaigndraft/{draft_ID}/send
-                //$response = $this->mj->post(Resources::$CampaigndraftSend, ['id' => $campaignDraftId]);
+            try {
+                $apiInstance->sendEmailCampaignNow($campaignId);
+            } catch (Exception $e) {
+                echo 'Exception when calling EmailCampaignsApi->sendEmailCampaignNow: ', $e->getMessage(), PHP_EOL;
             }
         }
 
-        return $campaignDraftId;
+        return $campaignId;
     }
 
     public function createComposterContactList(Composter $composter): Composter
