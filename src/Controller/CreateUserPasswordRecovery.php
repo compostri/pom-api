@@ -31,10 +31,10 @@ class CreateUserPasswordRecovery extends AbstractController
 
         $email->send([
             [
-                'To' => [['Email' => $user->getEmail(), 'Name' => $user->getUsername()]],
-                'Subject' => '[Compostri] Demande de récupération de mot de passe',
-                'TemplateID' => (int) getenv('MJ_PASSWORD_RECOVERY_TEMPLATE_ID'),
-                'Variables' => ['recovery_password_url' => "{$newPasswordUrl}?token={$resetToken}"],
+                'to' => [['email' => $user->getEmail(), 'name' => $user->getUsername()]],
+                'subject' => '[Compostri] Demande de récupération de mot de passe',
+                'templateId' => (int) getenv('MJ_PASSWORD_RECOVERY_TEMPLATE_ID'),
+                'params' => ['recovery_password_url' => "{$newPasswordUrl}?token={$resetToken}"],
             ],
         ]);
 
