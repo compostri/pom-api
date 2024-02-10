@@ -48,4 +48,7 @@ openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout
 ```
 bin/console doctrine:migrations:migrate
 ```
-9. _Optionnel_ Importer les données à partir de CleverCloud
+9. _Pour developer en local lancer les fixtures
+```
+php bin/console doctrine:fixtures:load
+```

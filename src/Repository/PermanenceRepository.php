@@ -6,7 +6,6 @@ use App\Entity\Permanence;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-
 /**
  * @method Permanence|null find($id, $lockMode = null, $lockVersion = null)
  * @method Permanence|null findOneBy(array $criteria, array $orderBy = null)
@@ -22,22 +21,22 @@ class PermanenceRepository extends ServiceEntityRepository
 
     /**
      * @throws
+     *
      * @return Permanence[] Returns an array of Permanence objects
      */
-    public function findAllToNotify()
+    public function findAllToNotify(): array
     {
-
         $today = new \DateTime();
         $dateMax = new \DateTime();
-        $dateMax->add( new \DateInterval( 'P3D'));
+        $dateMax->add(new \DateInterval('P3D'));
 
         return $this->createQueryBuilder('p')
             ->andWhere('p.date > :date')
             ->andWhere('p.date < :dateMax')
             ->andWhere('p.hasUsersBeenNotify = :has_users_been_notify')
-            ->setParameter('date', $today )
-            ->setParameter('dateMax', $dateMax )
-            ->setParameter('has_users_been_notify', false )
+            ->setParameter('date', $today)
+            ->setParameter('dateMax', $dateMax)
+            ->setParameter('has_users_been_notify', false)
             ->orderBy('p.date', 'DESC')
             ->setMaxResults(100)
             ->getQuery()

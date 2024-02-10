@@ -9,3 +9,6 @@ vendor/
 .DS_Store
 /config/jwt/private.pem
 /config/jwt/public.pem
+
+*.log
+/.php-cs-fixer.cache

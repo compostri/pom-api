@@ -27,7 +27,6 @@ class Equipement
      */
     private $id;
 
-
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Composter", mappedBy="pavilionsVolume")
      */
@@ -54,7 +53,6 @@ class Equipement
     {
         return $this->id;
     }
-    
 
     /**
      * @return Collection|Composter[]

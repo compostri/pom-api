@@ -53,6 +53,18 @@
             "ref": "ae205d5114e719deb64d2110f56ef910787d1e04"
         }
     },
+    "doctrine/doctrine-fixtures-bundle": {
+        "version": "3.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "3.0",
+            "ref": "1f5514cfa15b947298df4d771e694e578d4c204d"
+        },
+        "files": [
+            "src/DataFixtures/AppFixtures.php"
+        ]
+    },
     "doctrine/doctrine-migrations-bundle": {
         "version": "1.2",
         "recipe": {
@@ -104,6 +116,18 @@
             "src/DBAL/Types/.gitignore"
         ]
     },
+    "friendsofphp/php-cs-fixer": {
+        "version": "3.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "3.0",
+            "ref": "be2103eb4a20942e28a6dd87736669b757132435"
+        },
+        "files": [
+            ".php-cs-fixer.dist.php"
+        ]
+    },
     "friendsofphp/proxy-manager-lts": {
         "version": "v1.0.3"
     },
@@ -112,12 +136,6 @@
     },
     "gesdinet/jwt-refresh-token-bundle": {
         "version": "v0.8.2"
-    },
-    "guzzlehttp/guzzle": {
-        "version": "6.3.3"
-    },
-    "guzzlehttp/promises": {
-        "version": "v1.3.1"
     },
     "guzzlehttp/psr7": {
         "version": "1.5.2"
@@ -154,9 +172,6 @@
             "version": "2.5",
             "ref": "509b1542f3180a1cfe248ade8b7bf5092c2d4127"
         }
-    },
-    "mailjet/mailjet-apiv3-php": {
-        "version": "v1.4.1"
     },
     "michelf/php-markdown": {
         "version": "1.9.0"
@@ -199,9 +214,6 @@
     },
     "psr/container": {
         "version": "1.0.0"
-    },
-    "psr/http-client": {
-        "version": "1.0.1"
     },
     "psr/http-factory": {
         "version": "1.0.1"
@@ -355,6 +367,21 @@
     },
     "symfony/orm-pack": {
         "version": "v1.0.5"
+    },
+    "symfony/phpunit-bridge": {
+        "version": "7.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "5.1",
+            "ref": "2f91477d6efaed3fb857db87480f7d07d31cbb3e"
+        },
+        "files": [
+            ".env.test",
+            "bin/phpunit",
+            "phpunit.xml.dist",
+            "tests/bootstrap.php"
+        ]
     },
     "symfony/polyfill-intl-grapheme": {
         "version": "v1.22.0"

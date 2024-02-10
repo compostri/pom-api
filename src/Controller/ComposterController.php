@@ -11,7 +11,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ComposterController extends AbstractController
 {
-
     private $urlHelper;
 
     public function __construct(UrlHelper $urlHelper)
@@ -21,8 +20,6 @@ class ComposterController extends AbstractController
 
     /**
      * @Route("/composters.geojson", name="composters-geojson")
-     * @param Request $request
-     * @return Response
      */
     public function getCompostersGeojson(Request $request): Response
     {
@@ -36,10 +33,10 @@ class ComposterController extends AbstractController
         foreach ($composters as $c) {
             $features[] = [
                 'type' => 'Feature',
-                'geometry' => array(
+                'geometry' => [
                     'type' => 'Point',
                     'coordinates' => [$c->getLng(), $c->getLat()],
-                ),
+                ],
                 'properties' => [
                     'commune' => $c->getCommune() ? $c->getCommune()->getId() : null,
                     'communeName' => $c->getCommune() ? $c->getCommune()->getName() : null,
@@ -64,8 +61,6 @@ class ComposterController extends AbstractController
 
     /**
      * @Route("/composters-cartoquartiers.json", name="composters-cartoquartiers")
-     * @param Request $request
-     * @return Response
      */
     public function getCompostersCartoQuartiers(Request $request): Response
     {
@@ -79,21 +74,19 @@ class ComposterController extends AbstractController
         foreach ($composters as $c) {
             $description = $c->getDescription();
 
-            if( ! $description ){
-
-                if( $c->getCategorie()->getId() === 3 ){
-
+            if (!$description) {
+                if (3 === $c->getCategorie()->getId()) {
                     $description = 'Cet équipement est réservé à un usage pédagogique au sein de l’école';
                 } else {
                     $description = 'Vous pouvez déposer vos déchets organiques lors des permanences assurées par un collectif d’habitants. Distribution de compost en retour. Nous vous invitons à vérifier qu’il reste de la place auprès du référent en le contactant via le formulaire ou en vous rendant sur place lors d[’une permanence';
                 }
             }
             $cartoQuartierfeatures[] = [
-                'IDOBJ'         => $c->getSerialNumber(),
-                'descriptif'    => $description,
-                'photo'         => $c->getImage() ? $this->getImageUrl($c->getImage()->getImageName()) : 'https://www.cartoquartiers.fr/medias/2018/02/9.compostage.jpg',
-                'horaires'      => $c->getPermanencesDescription(),
-                'mail'          => 'https://composteurs.compostri.fr/composteur/' . $c->getSlug(),
+                'IDOBJ' => $c->getSerialNumber(),
+                'descriptif' => $description,
+                'photo' => $c->getImage() ? $this->getImageUrl($c->getImage()->getImageName()) : 'https://www.cartoquartiers.fr/medias/2018/02/9.compostage.jpg',
+                'horaires' => $c->getPermanencesDescription(),
+                'mail' => 'https://composteurs.compostri.fr/composteur/'.$c->getSlug(),
             ];
         }
 
@@ -102,8 +95,6 @@ class ComposterController extends AbstractController
 
     /**
      * @Route("/composters-opendata.json", name="composters-opendata")
-     * @param Request $request
-     * @return Response
      */
     public function getCompostersOpenData(Request $request): Response
     {
@@ -115,7 +106,7 @@ class ComposterController extends AbstractController
         /** @var Composter $c */
         foreach ($composters as $c) {
             $openDataFeatures[] = [
-                'id' => "" . $c->getId(),
+                'id' => ''.$c->getId(),
                 'nom' => $c->getName(),
                 'categorie' => $c->getCategorie() ? $c->getCategorie()->getName() : null,
                 'adresse' => $c->getAddress(),
@@ -123,7 +114,7 @@ class ComposterController extends AbstractController
                 'annee' => date_format($c->getDateMiseEnRoute(), 'Y'),
                 'lat' => $c->getLat(),
                 'lon' => $c->getLng(),
-                'lien' => getenv('FRONT_DOMAIN').'/composteur/' . $c->getSlug(),
+                'lien' => getenv('FRONT_DOMAIN').'/composteur/'.$c->getSlug(),
             ];
         }
 
@@ -132,8 +123,8 @@ class ComposterController extends AbstractController
 
     private function getImageUrl(string $imageName): string
     {
+        $dir = str_replace($this->getParameter('kernel.project_dir').'/public', '', $this->getParameter('upload_destination'));
 
-        $dir = str_replace($this->getParameter('kernel.project_dir') . '/public', '', $this->getParameter('upload_destination'));
-        return $this->urlHelper->getAbsoluteUrl($dir . $imageName);
+        return $this->urlHelper->getAbsoluteUrl($dir.$imageName);
     }
 }

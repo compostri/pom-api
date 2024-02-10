@@ -1,22 +1,30 @@
 <?php
 
-
 namespace App\Service;
 
-
 use App\Entity\Composter;
-use App\Entity\Consumer;
 use App\Entity\User;
-use Mailjet\Client;
-use Mailjet\Resources;
-use Mailjet\Response;
+use Brevo\Client\Api\ContactsApi;
+use Brevo\Client\Api\EmailCampaignsApi;
+use Brevo\Client\Api\ListsApi;
+use Brevo\Client\Api\TransactionalEmailsApi;
+use Brevo\Client\ApiException;
+use Brevo\Client\Configuration;
+use Brevo\Client\Model\AddContactToList;
+use Brevo\Client\Model\CreateContact;
+use Brevo\Client\Model\CreateEmailCampaign;
+use Brevo\Client\Model\CreateList;
+use Brevo\Client\Model\RemoveContactFromList;
+use Brevo\Client\Model\SendSmtpEmail;
+use Exception;
+use GuzzleHttp\Client;
+use Knp\Bundle\MarkdownBundle\MarkdownParserInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Security\Core\Security;
-use Knp\Bundle\MarkdownBundle\MarkdownParserInterface;
 
 class Mailjet
 {
-
     /**
      * @var Client
      */
@@ -42,315 +50,252 @@ class Mailjet
      */
     private $env;
 
+    private $logger;
 
     /**
      * Mailjet constructor.
-     * @param Security $security
-     * @param MJML $mjml
-     * @param MarkdownParserInterface $parser
-     * @param KernelInterface $kernel
      */
-    public function __construct( Security $security, MJML $mjml, MarkdownParserInterface $parser, KernelInterface $kernel )
+    public function __construct(Security $security, MJML $mjml, MarkdownParserInterface $parser, KernelInterface $kernel, LoggerInterface $logger)
     {
         $this->env = $kernel->getEnvironment();
-        $this->mj = new Client(
-            getenv('MJ_APIKEY_PUBLIC'),
-            getenv('MJ_APIKEY_PRIVATE'),
-            true,
-            ['version' => 'v3']
-        );
+        $this->mj = Configuration::getDefaultConfiguration()->setApiKey('api-key', getenv('BREVO_API_KEY'));
 
         $this->security = $security;
         $this->mjml = $mjml;
         $this->parser = $parser;
+        $this->logger = $logger;
     }
 
-
     /**
-     * @param array $messages   Tableau de tableau [[ 'To' => [], 'Subject' => '', 'TemplateID' => int,  'Variables' => []]]
-     * @return Response
+     * @param array $messages Tableau de tableau [[ 'to' => [], 'Subject' => '', 'TemplateID' => int,  'Variables' => []]]
+     *
+     * @throws ApiException
      */
-    public function send( array $messages ): Response
+    public function send(array $messages): bool
     {
+        $apiInstance = new TransactionalEmailsApi(new Client(), $this->mj);
 
-        $body = [ 'Messages' => []];
-
-        foreach ( $messages as $message ){
-
+        $isSend = false;
+        foreach ($messages as $message) {
             $m = $message;
 
             // On a defaut pour le From
-            if( ! isset(  $m['From'] ) ){
-                $m['From'] = ['Email' => getenv('MAILJET_FROM_EMAIL'), 'Name' => getenv('MAILJET_FROM_NAME')];
+            if (!isset($m['from'])) {
+                $m['from'] = ['email' => getenv('MAILJET_FROM_EMAIL'), 'name' => getenv('MAILJET_FROM_NAME')];
             }
 
-            $m['TemplateLanguage'] = true;
+            $sendSmtpEmail = new SendSmtpEmail($m);
+            $response = $apiInstance->sendTransacEmail($sendSmtpEmail);
 
-            $body['Messages'][] = $m;
-
-
+            $isSend = $isSend || $response->valid();
         }
 
-        return $this->mj->post(Resources::$Email, ['body' => $body], ['version' => 'v3.1']);
+        return $isSend;
     }
 
     /**
-     * @param string $name
-     * @param string $email
      * @return ?int
      */
-    public function addContact( string $name, string $email ) : ?int
+    public function addContact(string $name, string $email): ?int
     {
-
-
-        $body = [
-            'IsExcludedFromCampaigns'   => 'false',
-            'Name'                      => $name,
-            'Email'                     => $email
-        ];
-
-        $response = $this->mj->post(Resources::$Contact, ['body' => $body], ['version' => 'v3']);
+        $contactApi = new ContactsApi(new Client(), $this->mj);
+        $createContact = new CreateContact([
+            'email' => $email,
+            'attributes' => ['NOM' => $name],
+        ]);
 
         $mailjetId = null;
-        if( $response->success() ){
-            $contactData = $response->getData();
-            $mailjetId = $contactData[0]['ID'];
-        } else if( $response->getStatus() === 400 ){
-            // L'utilisateur existe déja
-            $response = $this->mj->get(Resources::$Contact, [ 'id' => $email]);
-
-            if( $response->success() ){
-                $contactData = $response->getData();
-                $mailjetId = $contactData[0]['ID'];
+        try {
+            $result = $contactApi->createContact($createContact);
+            $mailjetId = $result->getId();
+        } catch (ApiException $e) {
+            $responseBody = json_decode($e->getResponseBody());
+            if ('duplicate_parameter' === $responseBody->code) {
+                $mailjetId = $this->getContact($email);
             }
         }
+
         return $mailjetId;
     }
 
-
-    /**
-     * @param int $contactMailjetId
-     * @param array $listsId
-     * @return Response
-     */
-    public function addToList( int $contactMailjetId, array $listsId ) : Response
+    public function getContact(string $email): ?int
     {
-        $contactList = [];
-        foreach ( $listsId as $lId ){
-            $contactList[] = [
-                    'Action' => 'addnoforce',
-                    'ListID' => $lId
-                ];
-        }
-        $body = [
-            'ContactsLists' => $contactList
-        ];
+        $contactApi = new ContactsApi(new Client(), $this->mj);
 
-        return $this->mj->post(Resources::$ContactManagecontactslists, ['id' => $contactMailjetId, 'body' => $body]);
+        $mailjetId = null;
+        try {
+            $result = $contactApi->getContactInfo($email);
+            $mailjetId = $result->getId();
+        } catch (ApiException $e) {
+        }
+
+        return $mailjetId;
     }
 
-    /**
-     * @param int $contactMailjetId
-     * @param array $listsId
-     * @return Response
-     */
-    public function removeFromList( int $contactMailjetId, array $listsId ) : Response
+    public function addToList(int $contactMailjetId, array $listsId): void
     {
-        $contactList = [];
-        foreach ( $listsId as $lId ){
-            $contactList[] = [
-                    'Action' => 'remove',
-                    'ListID' => $lId
-                ];
-        }
-        $body = [
-            'ContactsLists' => $contactList
-        ];
+        $apiInstance = new ListsApi(new Client(), $this->mj);
+        $contactEmails = new AddContactToList([
+            'ids' => [$contactMailjetId],
+        ]);
 
-        return $this->mj->post(Resources::$ContactManagecontactslists, ['id' => $contactMailjetId, 'body' => $body]);
+        foreach ($listsId as $listId) {
+            try {
+                $result = $apiInstance->addContactToList($listId, $contactEmails);
+                $this->logger->info($result);
+            } catch (Exception $e) {
+                $this->logger->error($e);
+            }
+        }
     }
 
-
-    /**
-     * @param User $user
-     * @return Response|null
-     */
-    public function addUser( User $user ) : ?Response
+    public function removeFromList(int $contactMailjetId, array $listsId): void
     {
+        $apiInstance = new ListsApi(new Client(), $this->mj);
 
-        $response = null;
+        $contactEmails = new RemoveContactFromList([
+            'ids' => [$contactMailjetId],
+        ]);
 
-        if( ! $user->getMailjetId() ){
+        foreach ($listsId as $listId) {
+            try {
+                $apiInstance->removeContactFromList($listId, $contactEmails);
+            } catch (Exception $e) {
+            }
+        }
+    }
+
+    public function addUser(User $user): void
+    {
+        if (!$user->getMailjetId()) {
             // On ajoute notre contact sur Mailjet
-            $mailjetId = $this->addContact( $user->getUsername(), $user->getEmail() );
+            $mailjetId = $this->addContact($user->getUsername(), $user->getEmail());
 
-            if( $mailjetId ){
-                $user->setMailjetId( $mailjetId );
+            if ($mailjetId) {
+                $user->setMailjetId($mailjetId);
             }
         }
 
-        if( $user->getMailjetId() ){
-
+        if ($user->getMailjetId()) {
             // On ajoute notre contact aux composteurs
             $compostersMailjetListId = [];
-            foreach ( $user->getUserComposters() as $uc ){
+            foreach ($user->getUserComposters() as $uc) {
                 $mailjetListId = $uc->getComposter()->getMailjetListID();
 
-                if( $mailjetListId && $uc->getNewsletter() ){
+                if ($mailjetListId && $uc->getNewsletter()) {
                     $compostersMailjetListId[] = $mailjetListId;
                 }
             }
             // On l'ajoute à la newsletter de compostri
-            if( $user->getIsSubscribeToCompostriNewsletter() ){
-                $compostersMailjetListId[] = getenv('MJ_COMPOSTRI_NEWSLETTER_CONTACT_LIST_ID');
+            if ($user->getIsSubscribeToCompostriNewsletter()) {
+                $compostersMailjetListId[] = (int) getenv('MJ_COMPOSTRI_NEWSLETTER_CONTACT_LIST_ID');
             }
 
-            if( count( $compostersMailjetListId ) > 0 ){
-                $response = $this->addToList( $user->getMailjetId(), $compostersMailjetListId );
+            if (count($compostersMailjetListId) > 0) {
+                $this->addToList($user->getMailjetId(), $compostersMailjetListId);
             }
-
-
         }
-
-        return $response;
     }
 
-
     /**
-     * @param int $contactMailjetId
-     * @return Response
+     * @return int|void
      */
-    public function getContactContactsLists( int $contactMailjetId ) : Response
+    public function createCampaign(string $listId, string $subject, string $content, Composter $composter)
     {
-        return $this->mj->get(Resources::$ContactGetcontactslists, ['id' => $contactMailjetId]);
-    }
-
-
-    /**
-     * @param string $listId
-     * @param string $subject
-     * @param string $content
-     * @return Response
-     */
-    public function createCampaignDraft( string $listId, string $subject ) : Response
-    {
-
         $user = $this->security->getUser();
 
-        if( $user instanceof User ){
-
+        if ($user instanceof User) {
             $body = [
-                'EditMode'              => 'mjml',
-                'IsStarred'             => 'false',
-                'IsTextPartIncluded'    => 'true',
-                'ReplyEmail'            => $user->getEmail(),
-                'Title'                 => $subject,
-                'ContactsListID'        => $listId,
-                'Locale'                => 'fr_FR',
-                'Sender'                => 'Compostri',
-                'SenderEmail'           => getenv('MAILJET_FROM_EMAIL'),
-                'SenderName'            => getenv('MAILJET_FROM_NAME'),
-                'Subject'               => $subject
+                'name' => $subject,
+                'sender' => [
+                    'name' => getenv('MAILJET_FROM_NAME'),
+                    'email' => getenv('MAILJET_FROM_EMAIL'),
+                ],
+                'htmlContent' => $this->getCampaignHTMLContent($content, $composter),
+                'subject' => $subject,
+                'previewText' => $subject,
+                'replyTo' => $user->getEmail(),
+                'recipients' => ['listIds' => [(int) $listId]],
             ];
-            return $this->mj->post(Resources::$Campaigndraft, ['body' => $body]);
+
+            $apiInstance = new EmailCampaignsApi(new Client(), $this->mj);
+            $emailCampaigns = new CreateEmailCampaign($body);
+
+            try {
+                $result = $apiInstance->createEmailCampaign($emailCampaigns);
+
+                return $result->getId();
+            } catch (Exception $e) {
+                echo 'Exception when calling EmailCampaignsApi->createEmailCampaign: ', $e->getMessage(), PHP_EOL;
+            }
         }
-
     }
 
-
-    /**
-     * @param int $campaignId
-     * @param string $content
-     * @param Composter $composter
-     * @return Response
-     */
-    public function addCampaignDraftContent( int $campaignId, string $content, Composter $composter) : Response
+    public function getCampaignHTMLContent(string $content, Composter $composter): string
     {
-
-        $html = $this->mjml->getHtml( str_replace(
-            ['{{message}}', '{{composterURL}}','{{composterName}}'],
-            [$this->parser->transformMarkdown( $content ), getenv('FRONT_DOMAIN').'/composteur/' . $composter->getSlug(), $composter->getName()],
-            file_get_contents(__DIR__ . '/../../templates/mjml/composteur-newsletter.mjml') )
+        return $this->mjml->getHtml(
+            str_replace(
+                ['{{message}}', '{{composterURL}}', '{{composterName}}'],
+                [$this->parser->transformMarkdown($content), getenv('FRONT_DOMAIN').'/composteur/'.$composter->getSlug(), $composter->getName()],
+                file_get_contents(__DIR__.'/../../templates/mjml/composteur-newsletter.mjml')
+            )
         );
-        $body = [
-            'Html-part'     => $html,
-            'Text-part'     => $content
-        ];
-
-        return $this->mj->post(Resources::$CampaigndraftDetailcontent, ['id' => $campaignId, 'body' => $body]);
     }
 
     /**
-     * @param string $listId
-     * @param string $subject
-     * @param string $content
-     * @param Composter $composter
      * @return string|null id of campaign or null on error
      */
-    public function sendCampaign( string $listId, string $subject, string $content, Composter $composter) : ?string
+    public function sendCampaign(string $listId, string $subject, string $content, Composter $composter): ?string
     {
-        // Créer un brouillont : POST 	/campaigndraft
-        $response = $this->createCampaignDraft( $listId, $subject );
+        // Créer la campagne
+        $campaignId = $this->createCampaign($listId, $subject, $content, $composter);
 
-        if( $response->success() ){
-            $draftData = $response->getData();
-            $campaignDraftId = $draftData[0]['ID'];
+        if ($campaignId && 'prod' === $this->env) {
+            // Et l'envoyer
+            $apiInstance = new EmailCampaignsApi(new Client(), $this->mj);
 
-            // Ajouter du contenu : POST /campaigndraft/{draft_ID}/detailcontent
-            $response = $this->addCampaignDraftContent( $campaignDraftId, $content, $composter );
-
-            if( $response->success() && $this->env === 'prod'){
-                // Et enfin l'envoyer : POST /campaigndraft/{draft_ID}/send
-                $response = $this->mj->post(Resources::$CampaigndraftSend, ['id' => $campaignDraftId]);
+            try {
+                $apiInstance->sendEmailCampaignNow($campaignId);
+            } catch (Exception $e) {
+                echo 'Exception when calling EmailCampaignsApi->sendEmailCampaignNow: ', $e->getMessage(), PHP_EOL;
             }
-
         }
 
-
-        return $campaignDraftId;
+        return $campaignId;
     }
 
-
-    /**
-     * @param Composter $composter
-     * @return Composter
-     */
-    public function createComposterContactList( Composter $composter ) : Composter
+    public function createComposterContactList(Composter $composter): Composter
     {
-
         $contactListId = $composter->getMailjetListID();
 
-        if( ! $contactListId ) {
-
+        if (!$contactListId) {
             $slug = $composter->getName();
 
-            $body = [
-                'Name' => $slug
-            ];
-            $response = $this->mj->post(Resources::$Contactslist, ['body' => $body]);
+            $apiInstance = new ListsApi(new Client(), $this->mj);
 
-            if( $response->getStatus() === 400 ){
-                // La liste existe déja
-                $response = $this->mj->get(Resources::$Contactslist, [ 'filters' => ['Name' => $slug]]);
+            $createList = new CreateList([
+                'name' => $slug,
+                'folderId' => (int) getenv('BREVO_COMPOSTEURS_FOLDER'),
+            ]);
+
+            $contactListId = null;
+            try {
+                $result = $apiInstance->createList($createList);
+
+                $contactListId = $result->getId();
+            } catch (ApiException $e) {
             }
 
-            if( in_array($response->getStatus(), [200, 201], true) ){
-                $responseData = $response->getData();
-                $contactListId = $responseData[0]['ID'];
-
-                $composter->setMailjetListID( $contactListId );
+            if ($contactListId) {
+                $composter->setMailjetListID($contactListId);
             }
         }
 
         return $composter;
     }
 
-    /**
-     * @return Client
-     */
-    public function getMj(): Client
+    public function getMj()
     {
         return $this->mj;
     }
-
 }
