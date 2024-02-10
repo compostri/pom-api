@@ -1,16 +1,9 @@
 {
   "apps": [
     {
-      "app_id": "app_ca6dd385-049f-4dc0-b0a6-7ecbb769c7cd",
-      "deploy_url": "https://github.com/matiere-noire/composteur-api.git",
-      "name": "composteur-api",
-      "alias": "composteur-api",
-      "org_id": "orga_36652de4-73cd-4058-8f16-7ec47d8d2816"
-    },
-    {
-      "app_id": "app_678c6523-00c1-4571-a040-bc2f65b4a473",
-      "org_id": "orga_36652de4-73cd-4058-8f16-7ec47d8d2816",
-      "deploy_url": "https://github.com/matiere-noire/composteur-api.git",
+      "app_id": "app_ca126691-6977-4f9c-88e7-a67838471a16",
+      "org_id": "orga_e3790853-35dd-4ca9-84e0-81aa6a5dd0ec",
+      "deploy_url": "https://github.com/compostri/pom-api.git",
       "name": "Pom-e API [PREPROD]",
       "alias": "preprod"
     },

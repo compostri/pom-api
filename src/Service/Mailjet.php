@@ -77,28 +77,29 @@ class Mailjet
 
     /**
      * @param array $messages Tableau de tableau [[ 'to' => [], 'Subject' => '', 'TemplateID' => int,  'Variables' => []]]
-     * @return CreateSmtpEmail
+     * @return bool
      * @throws ApiException
      */
-    public function send(array $messages): CreateSmtpEmail
+    public function send(array $messages): bool
     {
         $apiInstance = new TransactionalEmailsApi(new Client(), $this->mj);
 
-
-        $body = [ 'Messages' => []];
-
+        $isSend = false;
         foreach ($messages as $message) {
             $m = $message;
 
             // On a defaut pour le From
-            if (! isset($m['From'])) {
+            if (! isset($m['from'])) {
                 $m['from'] = ['email' => getenv('MAILJET_FROM_EMAIL'), 'name' => getenv('MAILJET_FROM_NAME')];
             }
 
             $sendSmtpEmail = new SendSmtpEmail($m);
+            $response = $apiInstance->sendTransacEmail($sendSmtpEmail);
+
+            $isSend = $isSend || $response->valid();
         }
 
-        return $apiInstance->sendTransacEmail($sendSmtpEmail);
+        return $isSend;
     }
 
     /**
