@@ -58,7 +58,6 @@ class UserNotification extends Command
                 foreach ($openers as $opener) {
                     $userComposteur = $opener->getUserCompostersFor($perm->getComposter());
 
-
                     if ($userComposteur && $userComposteur->getNotif()) {
                         $messages[] = $this->getFormatMessage($opener, $perm);
                     }
