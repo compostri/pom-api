@@ -1,20 +1,16 @@
 <?php
 
-
 namespace App\Command;
-
 
 use App\Entity\Composter;
 use App\Service\Mailjet;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class CreateComposterMailjetContactList extends Command
 {
-
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'compost:create-mailjet-contact-list';
 
@@ -22,12 +18,11 @@ class CreateComposterMailjetContactList extends Command
 
     private $mailjet;
 
-    public function __construct( EntityManagerInterface $entityManager, Mailjet $mailjet )
+    public function __construct(EntityManagerInterface $entityManager, Mailjet $mailjet)
     {
         parent::__construct();
         $this->em = $entityManager;
         $this->mailjet = $mailjet;
-
     }
 
     protected function configure()
@@ -43,20 +38,16 @@ class CreateComposterMailjetContactList extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
-        $composters = $this->em->getRepository( Composter::class )
+        $composters = $this->em->getRepository(Composter::class)
             ->findAll();
 
-        foreach ( $composters as $composter ){
-
-            if( $composter instanceof Composter ){
-                $composter = $this->mailjet->createComposterContactList( $composter );
-                $this->em->persist( $composter );
-                $output->writeln( $composter->getMailjetListID() );
+        foreach ($composters as $composter) {
+            if ($composter instanceof Composter) {
+                $composter = $this->mailjet->createComposterContactList($composter);
+                $this->em->persist($composter);
+                $output->writeln($composter->getMailjetListID());
             }
         }
         $this->em->flush();
-
-
     }
 }

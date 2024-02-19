@@ -2,16 +2,14 @@
 
 namespace App\Filter;
 
-
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 
 class YearFilter extends AbstractContextAwareFilter
 {
-
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getDescription(string $resourceClass): array
     {
@@ -24,7 +22,7 @@ class YearFilter extends AbstractContextAwareFilter
             $description[$property] = [
                 'property' => $property,
                 'type' => 'string',
-                'required' => false
+                'required' => false,
             ];
         }
 

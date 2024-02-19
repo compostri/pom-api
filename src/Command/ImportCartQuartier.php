@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Command;
-
 
 use App\Entity\Composter;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
@@ -14,7 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ImportCartQuartier extends Command
 {
-
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'compost:import-carto-quartier';
 
@@ -24,7 +21,6 @@ class ImportCartQuartier extends Command
     {
         parent::__construct();
         $this->em = $entityManager;
-
     }
 
     protected function configure()
@@ -51,22 +47,19 @@ class ImportCartQuartier extends Command
         $composterCount = 0;
         $lines = 0;
         foreach ($reader->getSheetIterator() as $key => $sheet) {
-
             foreach ($sheet->getRowIterator() as $rkey => $row) {
-
-                if( $rkey > 1 ){
-                    $lines++;
+                if ($rkey > 1) {
+                    ++$lines;
 
                     // do stuff with the row
                     $cells = $row->getCells();
                     $composter = false;
 
-                    if( ! $cells[10]->isEmpty() ){
-
+                    if (!$cells[10]->isEmpty()) {
                         $composterSerialNumber = (int) $cells[10]->getValue();
 
                         $serailNumberRef = [
-                            23  => 243,
+                            23 => 243,
                             105 => 97,
                             130 => 120,
                             185 => 186,
@@ -93,17 +86,14 @@ class ImportCartQuartier extends Command
                             232 => 233,
                         ];
 
-                        if( array_key_exists($composterSerialNumber, $serailNumberRef)){
-                            $composterSerialNumber = $serailNumberRef[ $composterSerialNumber ];
+                        if (array_key_exists($composterSerialNumber, $serailNumberRef)) {
+                            $composterSerialNumber = $serailNumberRef[$composterSerialNumber];
                         }
 
-                        $composter = $composterRepository->findOneBy( [ 'serialNumber' => $composterSerialNumber ]);
-
-
-                    } else if( ! $cells[1]->isEmpty() ) {
-
-                        $name = str_replace( 'Composteur ', '', $cells[1]->getValue() );
-                        switch ( $name ){
+                        $composter = $composterRepository->findOneBy(['serialNumber' => $composterSerialNumber]);
+                    } elseif (!$cells[1]->isEmpty()) {
+                        $name = str_replace('Composteur ', '', $cells[1]->getValue());
+                        switch ($name) {
                             case 'Place de village Espace du Fort':
                                 $name = 'Place de Village Le Fort';
                                 break;
@@ -117,24 +107,21 @@ class ImportCartQuartier extends Command
                                 $name = 'Val de Cens';
                                 break;
                         }
-                        $composter = $composterRepository->findOneBy( [ 'name' => $name ]);
+                        $composter = $composterRepository->findOneBy(['name' => $name]);
                     }
 
-                    if( ! $composter instanceof  Composter ){
-                        $output->writeln( "{$cells[1]->getValue()} : pas trouvé" );
+                    if (!$composter instanceof Composter) {
+                        $output->writeln("{$cells[1]->getValue()} : pas trouvé");
                     } else {
-
-                        $composter->setPublicDescription( $cells[2]->getValue() );
-                        $composter->setPermanencesDescription( $cells[8]->getValue() );
-                        $this->em->persist( $composter );
-                        $composterCount++;
-
+                        $composter->setPublicDescription($cells[2]->getValue());
+                        $composter->setPermanencesDescription($cells[8]->getValue());
+                        $this->em->persist($composter);
+                        ++$composterCount;
                     }
                 }
-
             }
         }
         $this->em->flush();
-        $output->writeln( "{$composterCount} composteurs importé sur {$lines} lignes"  );
+        $output->writeln("{$composterCount} composteurs importé sur {$lines} lignes");
     }
 }

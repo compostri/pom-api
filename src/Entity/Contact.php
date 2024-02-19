@@ -3,13 +3,13 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
+use App\DBAL\Types\ContactEnumType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use App\DBAL\Types\ContactEnumType;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -60,7 +60,6 @@ class Contact
      * @Groups({"contact"})
      */
     private $role;
-
 
     /**
      * @ORM\Column(type="enumcontacttype")
@@ -144,7 +143,6 @@ class Contact
 
         return $this;
     }
-    
 
     public function getContactType(): ?string
     {

@@ -7,7 +7,6 @@ use App\DBAL\Types\ContactEnumType;
 use App\DBAL\Types\StatusEnumType;
 use App\Entity\Commune;
 use App\Entity\Composter;
-use App\Entity\ComposterContact;
 use App\Entity\Contact;
 use App\Entity\Equipement;
 use App\Entity\User;
@@ -21,7 +20,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class CompostImportComposteurLabelverteCommand extends Command
@@ -34,7 +32,6 @@ class CompostImportComposteurLabelverteCommand extends Command
     {
         parent::__construct();
         $this->em = $entityManager;
-
     }
 
     protected function configure()
@@ -81,25 +78,20 @@ class CompostImportComposteurLabelverteCommand extends Command
             14 => [6, 10], // 2022
         ];
         foreach ($reader->getSheetIterator() as $key => $sheet) {
-
-            if ( in_array($key, array_keys($rowToImportBySheet))) {
+            if (in_array($key, array_keys($rowToImportBySheet))) {
                 /**
                  * @var Row $row
                  */
                 foreach ($sheet->getRowIterator() as $rkey => $row) {
-
                     $cells = $row->getCells();
 
                     // Les trois premières lignes du doc sont des entête
                     if ($rkey > ($rowToImportBySheet[$key][0] - 1) && $rkey <= $rowToImportBySheet[$key][1]) {
-
-
                         $composteur = $this->getComposteurs($cells, $key + 2008);
-                        if($composteur){
-
+                        if ($composteur) {
                             $this->em->persist($composteur);
 
-                            $composterCount++;
+                            ++$composterCount;
                         }
                     }
 //                    else {
@@ -122,32 +114,29 @@ class CompostImportComposteurLabelverteCommand extends Command
         $output->writeln("Import de {$composterCount} composteurs");
 
         $reader->close();
-
-
     }
 
     /**
      * @param Cell[] $cells
+     *
      * @return Composter
      */
-    private function getComposteurs($cells, int $installationYear) : ?Composter
+    private function getComposteurs($cells, int $installationYear): ?Composter
     {
-
         $plateNumber = (string) $cells[0];
         $composteurRepo = $this->em->getRepository(Composter::class);
-        $composteur = $composteurRepo->findOneBy(['plateNumber' => $plateNumber ]);
+        $composteur = $composteurRepo->findOneBy(['plateNumber' => $plateNumber]);
 
-        if( ! $composteur ){
+        if (!$composteur) {
             $composteur = new Composter();
         }
 
         $dateIgnoguration = $cells[70]->isDate() ? $cells[70]->getValue() : null;
 
-
         $composteur
             ->setPlateNumber($plateNumber)
-            ->setMc( $this->getUser((string) $cells[1]))
-            ->setCommune( $this->getCommune((string) $cells[6]))
+            ->setMc($this->getUser((string) $cells[1]))
+            ->setCommune($this->getCommune((string) $cells[6]))
             ->setName((string) $cells[3])
             ->setAddress((string) $cells[4])
             ->setDateInstallation(new \DateTime("01-01-{$installationYear}"))
@@ -158,46 +147,46 @@ class CompostImportComposteurLabelverteCommand extends Command
         ;
 
         $referent = $this->getReferent((string) $cells[12], (string) $cells[13], $composteur);
-        if($referent){
+        if ($referent) {
             $composteur->addUserComposter($referent);
         }
 
         $contact1 = $this->getContact((string) $cells[15], (string) $cells[16], 'Gestionnaire de copropriété / représentant du bailleur');
-        if($contact1){
+        if ($contact1) {
             $composteur->addContact($contact1);
         }
         $contact2 = $this->getContact((string) $cells[17], (string) $cells[18], 'Président(e) du c. s. de copropriété');
-        if($contact2){
+        if ($contact2) {
             $composteur->addContact($contact2);
         }
         $contact3 = $this->getContact((string) $cells[22], (string) $cells[23], 'Gardien d’immeuble');
-        if($contact3){
+        if ($contact3) {
             $composteur->addContact($contact3);
         }
 
         return $composteur;
     }
 
-    private function getUser( string $fullName, array $role = ['ROLE_ADMIN'], string $phone = null) : ?User
+    private function getUser(string $fullName, array $role = ['ROLE_ADMIN'], string $phone = null): ?User
     {
-        if(empty($fullName)){
+        if (empty($fullName)) {
             return null;
         }
 
         $fullNameArray = explode(' ', $fullName);
 
-        if( count($fullNameArray) < 2){
+        if (count($fullNameArray) < 2) {
             $this->output->writeln($fullName);
+
             return null;
         }
         $firstName = $fullNameArray[0];
         $LastName = $fullNameArray[1];
 
         $userRepo = $this->em->getRepository(User::class);
-        $mc = $userRepo->findOneBy(['firstname' => $firstName, 'lastname' => $LastName ]);
+        $mc = $userRepo->findOneBy(['firstname' => $firstName, 'lastname' => $LastName]);
 
-
-        if( ! $mc ){
+        if (!$mc) {
             $mc = new User();
             $mc
                 ->setFirstname($firstName)
@@ -207,9 +196,9 @@ class CompostImportComposteurLabelverteCommand extends Command
                 ->setRoles($role)
                 ->setPhone($phone)
                 ->setPlainPassword('tobechanged')
-                ->setUserConfirmedAccountURL(getenv('FRONT_DOMAIN') . '/confirmation')
+                ->setUserConfirmedAccountURL(getenv('FRONT_DOMAIN').'/confirmation')
                 ->setIsSubscribeToCompostriNewsletter(false)
-                ->setEnabled( true)
+                ->setEnabled(true)
                 ->setMailjetId(10)
             ;
 
@@ -220,17 +209,16 @@ class CompostImportComposteurLabelverteCommand extends Command
         return $mc;
     }
 
-    public function getCommune( string $communeName ) : ?Commune
+    public function getCommune(string $communeName): ?Commune
     {
         $communeName = trim($communeName);
 
-        if(empty($communeName)){
+        if (empty($communeName)) {
             return null;
         }
 
         // Uniformisation des noms de commune
-        switch ($communeName)
-        {
+        switch ($communeName) {
             case 'Saint Barthélémy d’Anjou':
             case 'SAINT BARTHELEMY D\'ANJOU':
                 $communeName = 'Saint-Barthélemy-d\'Anjou';
@@ -258,7 +246,7 @@ class CompostImportComposteurLabelverteCommand extends Command
         $userRepo = $this->em->getRepository(Commune::class);
         $commune = $userRepo->findOneBy(['name' => $communeName]);
 
-        if( ! $commune ){
+        if (!$commune) {
             $commune = new Commune();
 
             $commune->setName($communeName);
@@ -269,24 +257,22 @@ class CompostImportComposteurLabelverteCommand extends Command
         return $commune;
     }
 
-    private function getReferent(string $referentName, string $referentPhone, Composter $composter) : ?UserComposter
+    private function getReferent(string $referentName, string $referentPhone, Composter $composter): ?UserComposter
     {
-
         $user = $this->getUser(
             $referentName,
             ['ROLE_USER'],
             $this->cleanPhoneNumber($referentPhone)
         );
 
-        if(!$user){
+        if (!$user) {
             return null;
         }
 
         $ucr = $this->em->getRepository(UserComposter::class);
         $userComposter = $ucr->findOneBy(['user' => $user, 'composter' => $composter]);
 
-        if( ! $userComposter){
-
+        if (!$userComposter) {
             $userComposter = new UserComposter();
             $userComposter
                 ->setUser($user)
@@ -302,32 +288,31 @@ class CompostImportComposteurLabelverteCommand extends Command
         return $userComposter;
     }
 
-    private function cleanPhoneNumber(string $phoneNumber) : ?string
+    private function cleanPhoneNumber(string $phoneNumber): ?string
     {
-        return $phoneNumber !== 'X' ? str_replace( [' ', '-'], '', $phoneNumber) : null;
+        return 'X' !== $phoneNumber ? str_replace([' ', '-'], '', $phoneNumber) : null;
     }
 
-    private function getContact(string $fullName, string $phone, string $role) : ?Contact
+    private function getContact(string $fullName, string $phone, string $role): ?Contact
     {
-
-        if(empty($fullName) || in_array($fullName, [ 'x', 'X', '/', 'oui', 'Non'])){
+        if (empty($fullName) || in_array($fullName, ['x', 'X', '/', 'oui', 'Non'])) {
             return null;
         }
 
         $fullNameArray = explode(' ', $fullName);
 
-        if( count($fullNameArray) < 2){
+        if (count($fullNameArray) < 2) {
             $this->output->writeln($fullName);
+
             return null;
         }
         $firstName = $fullNameArray[0];
         $LastName = $fullNameArray[1];
 
         $contactRepo = $this->em->getRepository(Contact::class);
-        $contact = $contactRepo->findOneBy(['firstName' => $firstName, 'lastName' => $LastName ]);
+        $contact = $contactRepo->findOneBy(['firstName' => $firstName, 'lastName' => $LastName]);
 
-
-        if( ! $contact ){
+        if (!$contact) {
             $contact = new Contact();
             $contact
                 ->setFirstname($firstName)
@@ -343,19 +328,18 @@ class CompostImportComposteurLabelverteCommand extends Command
         }
 
         return $contact;
-
     }
 
-    private function getEquipement(string $type, string $capacity) : ?Equipement
+    private function getEquipement(string $type, string $capacity): ?Equipement
     {
-        if(empty($type)){
+        if (empty($type)) {
             return null;
         }
 
         $er = $this->em->getRepository(Equipement::class);
-        $equipement = $er->findOneBy(['type' => $type, 'capacite' => $capacity ]);
+        $equipement = $er->findOneBy(['type' => $type, 'capacite' => $capacity]);
 
-        if( ! $equipement){
+        if (!$equipement) {
             $equipement = new Equipement();
             $equipement
                 ->setCapacite($capacity)
