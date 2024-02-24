@@ -6,6 +6,12 @@
       "deploy_url": "https://github.com/compostri/pom-api.git",
       "name": "Pom-e API [PREPROD]",
       "alias": "preprod"
+    },  {
+      "app_id": "app_278881d0-005d-4999-9d18-fb267a7ca0aa",
+      "org_id": "orga_e3790853-35dd-4ca9-84e0-81aa6a5dd0ec",
+      "deploy_url": "https://github.com/compostri/pom-api.git",
+      "name": "Pom-e API [PROD]",
+      "alias": "prod"
     },
     {
       "app_id": "app_2212e058-dd55-4bc6-a4a2-6cd02ae68fd7",

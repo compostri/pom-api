@@ -16,6 +16,10 @@ use Brevo\Client\Model\CreateEmailCampaign;
 use Brevo\Client\Model\CreateList;
 use Brevo\Client\Model\RemoveContactFromList;
 use Brevo\Client\Model\SendSmtpEmail;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
 use GuzzleHttp\Client;
 use Knp\Bundle\MarkdownBundle\MarkdownParserInterface;
@@ -30,32 +34,22 @@ class Mailjet
      */
     private $mj;
 
-    /**
-     * @var Security
-     */
-    private $security;
+    private Security $security;
 
-    /**
-     * @var MJML
-     */
-    private $mjml;
+    private MJML $mjml;
 
-    /**
-     * @var MarkdownParserInterface
-     */
-    private $parser;
+    private MarkdownParserInterface $parser;
 
-    /**
-     * @var string
-     */
-    private $env;
+    private string $env;
 
-    private $logger;
+    private LoggerInterface $logger;
+
+    private EntityManager $em;
 
     /**
      * Mailjet constructor.
      */
-    public function __construct(Security $security, MJML $mjml, MarkdownParserInterface $parser, KernelInterface $kernel, LoggerInterface $logger)
+    public function __construct(Security $security, MJML $mjml, MarkdownParserInterface $parser, KernelInterface $kernel, LoggerInterface $logger, EntityManagerInterface $em)
     {
         $this->env = $kernel->getEnvironment();
         $this->mj = Configuration::getDefaultConfiguration()->setApiKey('api-key', getenv('BREVO_API_KEY'));
@@ -64,6 +58,7 @@ class Mailjet
         $this->mjml = $mjml;
         $this->parser = $parser;
         $this->logger = $logger;
+        $this->em = $em;
     }
 
     /**
@@ -79,7 +74,7 @@ class Mailjet
         foreach ($messages as $message) {
             $m = $message;
 
-            // On a defaut pour le From
+            // On a default pour le From
             if (!isset($m['from'])) {
                 $m['from'] = ['email' => getenv('MAILJET_FROM_EMAIL'), 'name' => getenv('MAILJET_FROM_NAME')];
             }
@@ -165,6 +160,10 @@ class Mailjet
         }
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
     public function addUser(User $user): void
     {
         if (!$user->getMailjetId()) {
@@ -173,6 +172,8 @@ class Mailjet
 
             if ($mailjetId) {
                 $user->setMailjetId($mailjetId);
+                $this->em->persist($user);
+                $this->em->flush();
             }
         }
 

@@ -48,7 +48,24 @@ class UserComposterListener
 
         // Si le user c'est abonné a là newsletter du composteur on l'y ajoute
         if ($userComposter->getNewsletter()) {
-            $this->email->addToList($userComposter->getUser()->getMailjetId(), [$userComposter->getComposter()->getMailjetListID()]);
+            $composter = $userComposter->getComposter();
+            $mailjetListID = $composter->getMailjetListID();
+
+            // On crée la liste si le composteur n'en a pas encore
+            if (!$mailjetListID) {
+                $composter = $this->email->createComposterContactList($composter);
+                $this->entityManager->persist($composter);
+                $this->entityManager->flush();
+                $mailjetListID = $composter->getMailjetListID();
+            }
+
+            if ($mailjetListID) {
+                if (!$userComposter->getUser()->getMailjetId()) {
+                    $this->email->addUser($userComposter->getUser());
+                } else {
+                    $this->email->addToList($userComposter->getUser()->getMailjetId(), [$mailjetListID]);
+                }
+            }
         }
     }
 

@@ -39,13 +39,13 @@ class CreateComposterMailjetContactList extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composters = $this->em->getRepository(Composter::class)
-            ->findAll();
+            ->findAllWithUsers();
 
         foreach ($composters as $composter) {
             if ($composter instanceof Composter) {
                 $composter = $this->mailjet->createComposterContactList($composter);
                 $this->em->persist($composter);
-                $output->writeln($composter->getMailjetListID());
+                $output->writeln('Nouvelle liste crée pour le composter ['.$composter->getName().'] : '.$composter->getMailjetListID());
             }
         }
         $this->em->flush();
