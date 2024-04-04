@@ -285,7 +285,7 @@ class Composter
      * @ORM\Column(type="bigint", nullable=true)
      * @Groups({"composter"})
      */
-    private ?int $mailjetListID;
+    private ?int $mailjetListID = null;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
