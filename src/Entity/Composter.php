@@ -27,18 +27,19 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @ApiFilter(BooleanFilter::class, properties={"acceptNewMembers"})
  * @ApiFilter(YearFilter::class, properties={"DateMiseEnRoute"})
  * @ApiFilter(SearchFilter::class, properties={
- *     "commune"        : "exact",
- *     "quartier"       : "exact",
- *     "pole"           : "exact",
- *     "equipement"     : "exact",
+ *     "broyatLevel"    : "exact",
  *     "categorie"      : "exact",
+ *     "commune"        : "exact",
+ *     "contacts"       : "exact",
+ *     "equipement"     : "exact",
  *     "financeur"      : "exact",
  *     "financeurSuivi" : "exact",
- *     "contacts"       : "exact",
- *     "status"         : "exact",
+ *     "mc"             : "exact",
  *     "name"           : "partial",
+ *     "pole"           : "exact",
+ *     "quartier"       : "exact",
  *     "serialNumber"   : "partial",
- *     "broyatLevel"    : "exact"
+ *     "status"         : "exact"
  * })
  * @ORM\EntityListeners({"App\EventListener\ComposterListener"})
  * @ApiFilter(OrderFilter::class, properties={"DateMiseEnRoute", "status", "name", "serialNumber"}, arguments={"orderParameterName"="order"})
