@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     attributes={"security"="is_granted('ROLE_USER')"},
+ *     attributes={"security"="is_granted('ROLE_USER')", "pagination_items_per_page"=200},
  *     normalizationContext={"groups"={"userComposter"}},
  *     denormalizationContext={"groups"={"userComposter", "userComposter:write"}}
  * )
