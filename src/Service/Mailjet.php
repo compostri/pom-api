@@ -164,7 +164,7 @@ class Mailjet
      * @throws OptimisticLockException
      * @throws ORMException
      */
-    public function addUser(User $user): void
+    public function addUser(User $user, bool $persistUser = true): void
     {
         if (!$user->getMailjetId()) {
             // On ajoute notre contact sur Mailjet
@@ -172,8 +172,10 @@ class Mailjet
 
             if ($mailjetId) {
                 $user->setMailjetId($mailjetId);
-                $this->em->persist($user);
-                $this->em->flush();
+                if ($persistUser) {
+                    $this->em->persist($user);
+                    $this->em->flush();
+                }
             }
         }
 
