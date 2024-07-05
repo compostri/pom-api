@@ -6,6 +6,8 @@ use App\Entity\User;
 use App\Service\Mailjet;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
@@ -28,9 +30,13 @@ class UserListener
         $this->email = $email;
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
     public function prePersist(User $user): void
     {
-        $this->email->addUser($user);
+        $this->email->addUser($user, false);
 
         /*
          * Pour les utilisateur nouvellement créer qui sont en enabled = false :
