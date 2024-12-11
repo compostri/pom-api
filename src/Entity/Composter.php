@@ -948,7 +948,7 @@ class Composter
 
     public function setMailjetListID(?string $mailjetListID): self
     {
-        $this->mailjetListID = (string) $mailjetListID;
+        $this->mailjetListID = $mailjetListID;
 
         return $this;
     }

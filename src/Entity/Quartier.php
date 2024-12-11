@@ -37,6 +37,11 @@ class Quartier
      */
     private $composters;
 
+    public function __toString()
+    {
+        return "{$this->id} - {$this->name}";
+    }
+
     public function __construct()
     {
         $this->composters = new ArrayCollection();
